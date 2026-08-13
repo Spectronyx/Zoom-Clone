@@ -1,0 +1,23 @@
+# Node / Next.js
+frontend/.next/
+frontend/node_modules/
+frontend/.swc/
+frontend/tsconfig.tsbuildinfo
+frontend/coverage/
+
+# Python / Django
+backend/venv/
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+backend/*.sqlite3
+backend/.pytest_cache/
+backend/.coverage
+*.pyc
+
+# Environment & System
+.env
+.env.local
+.DS_Store
+.vscode/
+.idea/
