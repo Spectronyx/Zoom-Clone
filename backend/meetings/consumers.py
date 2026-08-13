@@ -388,6 +388,7 @@ class MeetingConsumer(AsyncWebsocketConsumer):
         )
 
     async def handle_request_admission(self, data):
+        await self.channel_layer.group_add(self.room_group, self.channel_name)
         await self.channel_layer.group_send(
             self.room_group,
             {
@@ -425,7 +426,7 @@ class MeetingConsumer(AsyncWebsocketConsumer):
     # ─── Outgoing message handlers ──────────────────────────────────────────
 
     async def participant_joined(self, event):
-        if event.get("sender_channel") == self.channel_name:
+        if event.get("sender_channel") == self.channel_name or not self.participant_info:
             return
         await self.send_json({
             "type": "participant-joined",

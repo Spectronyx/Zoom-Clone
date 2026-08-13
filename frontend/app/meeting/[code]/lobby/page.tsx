@@ -137,14 +137,10 @@ export default function LobbyPage() {
       socketRef.current = socket;
 
       await socket.connect();
-      socket.send({
-        type: "request_admission",
-        participant_id: result.participant_id,
-        display_name: displayName.trim(),
-      });
 
       socket.on("admission_result", (msg) => {
-        if (msg.target_participant_id === result.participant_id) {
+        const targetId = (msg.target_participant_id || msg.participant_id) as string;
+        if (!targetId || targetId === result.participant_id) {
           if (msg.approved) {
             isJoiningRef.current = true;
             sessionStorage.setItem("meetingSession", JSON.stringify({
@@ -158,6 +154,12 @@ export default function LobbyPage() {
             socket.disconnect();
           }
         }
+      });
+
+      socket.send({
+        type: "request_admission",
+        participant_id: result.participant_id,
+        display_name: displayName.trim(),
       });
     } catch (err) {
       console.error("Failed to join:", err);
