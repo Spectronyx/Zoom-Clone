@@ -47,6 +47,7 @@ export default function MeetingRoomPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [admissionQueue, setAdmissionQueue] = useState<Array<{ participant_id: string; display_name: string }>>([]);
 
   // ─── Restore media stream if null ─────────────────────────────────────────
   useEffect(() => {
@@ -148,7 +149,17 @@ export default function MeetingRoomPage() {
           }
         });
 
-        socket.on("participant-joined", (msg) => {
+        socket.on("admission_request", (msg) => {
+          setAdmissionQueue((prev) => [
+            ...prev.filter((p) => p.participant_id !== msg.participant_id),
+            {
+              participant_id: msg.participant_id as string,
+              display_name: msg.display_name as string,
+            },
+          ]);
+        });
+
+  socket.on("participant-joined", (msg) => {
           if (msg.participant_id !== participantId) {
             addParticipant({
               id: msg.participant_id as string,
@@ -447,7 +458,49 @@ export default function MeetingRoomPage() {
   }
 
   return (
-    <div className="h-screen bg-zoom-dark flex flex-col overflow-hidden">
+    <div className="relative min-h-screen bg-zoom-dark flex flex-col overflow-hidden select-none">
+      {/* Real-Time Admission Request Banner for Host */}
+      {isHost && admissionQueue.length > 0 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-zoom-blue shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-5 animate-bounce-short text-white backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-zoom-blue/20 flex items-center justify-center text-zoom-blue font-bold">
+              {admissionQueue[0].display_name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-bold">{admissionQueue[0].display_name}</p>
+              <p className="text-xs text-gray-400">wants to join this meeting</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const pid = admissionQueue[0].participant_id;
+                socketRef.current?.send({
+                  type: "admit_participant",
+                  target_participant_id: pid,
+                });
+                setAdmissionQueue((prev) => prev.filter((p) => p.participant_id !== pid));
+              }}
+              className="px-4 py-1.5 bg-zoom-blue hover:bg-zoom-blue-hover text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md"
+            >
+              Admit
+            </button>
+            <button
+              onClick={() => {
+                const pid = admissionQueue[0].participant_id;
+                socketRef.current?.send({
+                  type: "deny_participant",
+                  target_participant_id: pid,
+                });
+                setAdmissionQueue((prev) => prev.filter((p) => p.participant_id !== pid));
+              }}
+              className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+            >
+              Deny
+            </button>
+          </div>
+        </div>
+      )}
       {/* Top Header Bar */}
       <div className="h-12 bg-zoom-dark-panel/90 backdrop-blur flex items-center justify-between px-4 z-30
         border-b border-gray-800">

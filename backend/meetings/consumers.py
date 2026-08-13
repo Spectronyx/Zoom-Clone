@@ -387,6 +387,41 @@ class MeetingConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    async def handle_request_admission(self, data):
+        await self.channel_layer.group_send(
+            self.room_group,
+            {
+                "type": "broadcast_admission_request",
+                "participant_id": data["participant_id"],
+                "display_name": data["display_name"],
+                "sender_channel": self.channel_name,
+            }
+        )
+
+    async def handle_admit_participant(self, data):
+        if not self.participant_info or not self.participant_info.get("is_host"):
+            return
+        await self.channel_layer.group_send(
+            self.room_group,
+            {
+                "type": "broadcast_admission_result",
+                "target_participant_id": data["target_participant_id"],
+                "approved": True,
+            }
+        )
+
+    async def handle_deny_participant(self, data):
+        if not self.participant_info or not self.participant_info.get("is_host"):
+            return
+        await self.channel_layer.group_send(
+            self.room_group,
+            {
+                "type": "broadcast_admission_result",
+                "target_participant_id": data["target_participant_id"],
+                "approved": False,
+            }
+        )
+
     # ─── Outgoing message handlers ──────────────────────────────────────────
 
     async def participant_joined(self, event):
@@ -494,4 +529,18 @@ class MeetingConsumer(AsyncWebsocketConsumer):
             "participant_id": event["participant_id"],
             "display_name": event["display_name"],
             "sharing": event["sharing"],
+        })
+
+    async def broadcast_admission_request(self, event):
+        await self.send_json({
+            "type": "admission_request",
+            "participant_id": event["participant_id"],
+            "display_name": event["display_name"],
+        })
+
+    async def broadcast_admission_result(self, event):
+        await self.send_json({
+            "type": "admission_result",
+            "target_participant_id": event["target_participant_id"],
+            "approved": event["approved"],
         })

@@ -21,6 +21,7 @@ export interface Meeting {
   invite_link: string;
   passcode: string | null;
   is_locked?: boolean;
+  waiting_room_enabled?: boolean;
   status: 'scheduled' | 'live' | 'ended' | 'cancelled';
   created_at: string;
   host: User | null;

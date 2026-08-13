@@ -36,7 +36,7 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'meeting_code', 'host_id', 'topic', 'description',
             'meeting_type', 'scheduled_start_at', 'duration_minutes',
-            'invite_link', 'passcode', 'is_locked', 'status', 'created_at', 'host',
+            'invite_link', 'passcode', 'is_locked', 'waiting_room_enabled', 'status', 'created_at', 'host',
         ]
 
 

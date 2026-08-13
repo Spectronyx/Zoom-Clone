@@ -69,6 +69,7 @@ class Meeting(models.Model):
     invite_link = models.CharField(max_length=500, unique=True)
     passcode = models.CharField(max_length=10, null=True, blank=True)
     is_locked = models.BooleanField(default=False)
+    waiting_room_enabled = models.BooleanField(default=True)
     status = models.CharField(
         max_length=10, choices=MeetingStatus.choices, default=MeetingStatus.SCHEDULED,
         db_index=True,
