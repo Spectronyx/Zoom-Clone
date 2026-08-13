@@ -42,6 +42,7 @@ interface MeetingState {
   addChatMessage: (msg: ChatMessage) => void;
   toggleParticipants: () => void;
   toggleChat: () => void;
+  openChat: () => void;
   setElapsed: (s: number) => void;
   reset: () => void;
 }
@@ -165,6 +166,12 @@ export const useMeetingStore = create<MeetingState>((set) => ({
       showChat: !state.showChat,
       showParticipants: !state.showChat ? false : state.showParticipants,
     })),
+
+  openChat: () =>
+    set({
+      showChat: true,
+      showParticipants: false,
+    }),
 
   setElapsed: (s) => set({ elapsedSeconds: s }),
 

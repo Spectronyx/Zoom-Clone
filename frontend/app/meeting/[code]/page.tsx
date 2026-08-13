@@ -137,6 +137,17 @@ export default function MeetingRoomPage() {
             message: msg.message as string,
             sent_at: msg.sent_at as string,
           });
+          useMeetingStore.getState().openChat();
+        });
+
+        socket.on("screen-share-state", (msg) => {
+          const pid = msg.participant_id as string;
+          const sharing = msg.sharing as boolean;
+          if (sharing) {
+            setPinnedParticipant(pid);
+          } else {
+            setPinnedParticipant(null);
+          }
         });
 
         socket.on("reaction", (msg) => {
@@ -295,6 +306,7 @@ export default function MeetingRoomPage() {
         }
       }
       setScreenSharing(false);
+      setPinnedParticipant(null);
       socketRef.current?.send({ type: "screen-share-state", sharing: false });
     } else {
       try {
@@ -318,10 +330,12 @@ export default function MeetingRoomPage() {
             }
           }
           setScreenSharing(false);
+          setPinnedParticipant(null);
           socketRef.current?.send({ type: "screen-share-state", sharing: false });
         };
 
         setScreenSharing(true);
+        if (participantId) setPinnedParticipant(participantId);
         socketRef.current?.send({ type: "screen-share-state", sharing: true });
       } catch {
         // User cancelled picker
