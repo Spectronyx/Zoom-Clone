@@ -9,10 +9,13 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   maxWidth?: string;
+  size?: string;
 }
 
-export default function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md", size }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  const effectiveMaxWidth = size === "lg" ? "max-w-lg" : size === "xl" ? "max-w-xl" : maxWidth;
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -38,7 +41,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = "ma
     >
       <div
         className={`
-          bg-white rounded-lg shadow-xl w-full ${maxWidth} mx-4
+          bg-white rounded-lg shadow-xl w-full ${effectiveMaxWidth} mx-4
           animate-scale-in
         `}
       >

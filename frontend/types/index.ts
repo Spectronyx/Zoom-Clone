@@ -12,6 +12,7 @@ export interface Meeting {
   id: string;
   meeting_code: string;
   host_id: string;
+  host_name?: string;
   topic: string;
   description: string | null;
   meeting_type: 'instant' | 'scheduled';
@@ -69,6 +70,7 @@ export interface Participant {
   is_muted?: boolean;
   is_video_off?: boolean;
   is_screen_sharing?: boolean;
+  joined_at?: string;
   stream?: MediaStream;
 }
 

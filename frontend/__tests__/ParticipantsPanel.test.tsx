@@ -5,6 +5,7 @@ import { Participant } from "@/types";
 
 const mockParticipants: Participant[] = [
   {
+    id: "p-2",
     participant_id: "p-2",
     display_name: "Bob Guest",
     is_host: false,
