@@ -79,7 +79,7 @@ export default function VideoTile({
 
       {/* Avatar Fallback Overlay when Video is Off */}
       {!shouldShowVideo && (
-        <div className="w-full h-full flex items-center justify-center bg-zoom-dark-tile min-h-[160px]">
+        <div className="w-full h-full flex items-center justify-center bg-zoom-dark-tile">
           <Avatar name={displayName} color={avatarColor} size="xl" />
         </div>
       )}

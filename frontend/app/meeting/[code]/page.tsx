@@ -444,12 +444,14 @@ export default function MeetingRoomPage() {
   // Check if a tile is pinned
   const pinnedTileId = pinnedParticipantId;
 
-  // Grid layout classes
-  let gridClass = "grid-cols-1";
+  // Grid layout classes for Real Zoom Gallery View
+  let gridClass = "grid-cols-1 grid-rows-1";
   if (!pinnedTileId) {
-    if (totalParticipants === 2) gridClass = "grid-cols-1 sm:grid-cols-2";
-    else if (totalParticipants >= 3 && totalParticipants <= 4) gridClass = "grid-cols-1 sm:grid-cols-2";
-    else if (totalParticipants >= 5) gridClass = "grid-cols-2 sm:grid-cols-3";
+    if (totalParticipants === 2) gridClass = "grid-cols-1 md:grid-cols-2 grid-rows-1 md:grid-rows-1";
+    else if (totalParticipants >= 3 && totalParticipants <= 4) gridClass = "grid-cols-2 grid-rows-2";
+    else if (totalParticipants >= 5 && totalParticipants <= 6) gridClass = "grid-cols-3 grid-rows-2";
+    else if (totalParticipants >= 7 && totalParticipants <= 9) gridClass = "grid-cols-3 grid-rows-3";
+    else if (totalParticipants >= 10) gridClass = "grid-cols-4 grid-rows-3";
   }
 
   return (
@@ -527,13 +529,13 @@ export default function MeetingRoomPage() {
       </div>
 
       {/* Main Grid & Side Panels */}
-      <div className="flex-1 flex overflow-hidden relative">
-        <div className="flex-1 p-3 pb-20 overflow-hidden flex flex-col">
+      <div className="flex-1 flex overflow-hidden relative min-h-0 min-w-0">
+        <div className="flex-1 p-3 pb-20 overflow-hidden flex items-center justify-center min-h-0 min-w-0">
           {pinnedTileId ? (
             /* Spotlight Mode Layout */
-            <div className="flex-1 flex flex-col md:flex-row gap-3 overflow-hidden">
+            <div className="flex-1 h-full w-full flex flex-col md:flex-row gap-3 overflow-hidden min-h-0 min-w-0">
               {/* Primary Pinned Spotlight View */}
-              <div className="flex-1 h-full">
+              <div className="flex-1 h-full min-h-0 min-w-0">
                 {pinnedTileId === participantId ? (
                   <VideoTile
                     participantId={participantId || "local"}
@@ -545,7 +547,7 @@ export default function MeetingRoomPage() {
                     isPinned={true}
                     reactionEmoji={reactions[participantId || "local"] || null}
                     onTogglePin={() => setPinnedParticipant(null)}
-                    className="h-full w-full"
+                    className="h-full w-full min-h-0 min-w-0"
                   />
                 ) : (
                   (() => {
@@ -560,7 +562,7 @@ export default function MeetingRoomPage() {
                         isPinned={true}
                         reactionEmoji={reactions[pinnedParticipant.participant_id] || null}
                         onTogglePin={() => setPinnedParticipant(null)}
-                        className="h-full w-full"
+                        className="h-full w-full min-h-0 min-w-0"
                       />
                     ) : null;
                   })()
@@ -568,7 +570,7 @@ export default function MeetingRoomPage() {
               </div>
 
               {/* Side Gallery Carousel */}
-              <div className="w-full md:w-64 h-32 md:h-full flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto shrink-0">
+              <div className="w-full md:w-64 h-32 md:h-full flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto shrink-0 min-h-0 min-w-0">
                 {pinnedTileId !== participantId && (
                   <VideoTile
                     participantId={participantId || "local"}
@@ -579,7 +581,7 @@ export default function MeetingRoomPage() {
                     isLocal={true}
                     reactionEmoji={reactions[participantId || "local"] || null}
                     onTogglePin={() => setPinnedParticipant(participantId)}
-                    className="h-full md:h-36 w-44 md:w-full shrink-0"
+                    className="h-full md:h-36 w-44 md:w-full shrink-0 min-h-0 min-w-0"
                   />
                 )}
                 {remoteParticipants.filter(p => p.participant_id !== pinnedTileId).map(p => (
@@ -592,14 +594,14 @@ export default function MeetingRoomPage() {
                     isVideoOff={p.is_video_off}
                     reactionEmoji={reactions[p.participant_id] || null}
                     onTogglePin={() => setPinnedParticipant(p.participant_id)}
-                    className="h-full md:h-36 w-44 md:w-full shrink-0"
+                    className="h-full md:h-36 w-44 md:w-full shrink-0 min-h-0 min-w-0"
                   />
                 ))}
               </div>
             </div>
           ) : (
             /* Standard Grid Layout */
-            <div className={`grid ${gridClass} gap-3 h-full auto-rows-fr`}>
+            <div className={`grid ${gridClass} gap-3 h-full w-full min-h-0 min-w-0`}>
               <VideoTile
                 participantId={participantId || "local"}
                 stream={localStream}
@@ -609,6 +611,7 @@ export default function MeetingRoomPage() {
                 isLocal={true}
                 reactionEmoji={reactions[participantId || "local"] || null}
                 onTogglePin={() => setPinnedParticipant(participantId)}
+                className="h-full w-full min-h-0 min-w-0"
               />
 
               {remoteParticipants.map((p) => (
@@ -621,6 +624,7 @@ export default function MeetingRoomPage() {
                   isVideoOff={p.is_video_off}
                   reactionEmoji={reactions[p.participant_id] || null}
                   onTogglePin={() => setPinnedParticipant(p.participant_id)}
+                  className="h-full w-full min-h-0 min-w-0"
                 />
               ))}
             </div>
