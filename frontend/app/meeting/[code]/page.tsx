@@ -22,7 +22,7 @@ export default function MeetingRoomPage() {
   const code = params.code as string;
 
   const {
-    currentMeeting, instanceId, participantId, isHost, isLocked, meetingCode,
+    currentMeeting, instanceId, participantId, displayName, isHost, isLocked, meetingCode,
     participants, chatMessages, pinnedParticipantId, reactions,
     showParticipants, showChat,
     elapsedSeconds,
@@ -106,7 +106,7 @@ export default function MeetingRoomPage() {
         socket.send({
           type: "join-room",
           participant_id: participantId,
-          display_name: currentMeeting?.host?.name || "User",
+          display_name: displayName || currentMeeting?.host?.name || "User",
           is_host: isHost,
         });
 
@@ -345,11 +345,11 @@ export default function MeetingRoomPage() {
     socketRef.current?.send({ type: "chat-message", message });
     addChatMessage({
       participant_id: participantId || "",
-      display_name: "You",
+      display_name: displayName || "You",
       message,
       sent_at: new Date().toISOString(),
     });
-  }, [participantId, addChatMessage]);
+  }, [participantId, displayName, addChatMessage]);
 
   const handleMuteAll = useCallback(() => {
     socketRef.current?.send({ type: "host-action", action: "mute-all" });
@@ -546,7 +546,7 @@ export default function MeetingRoomPage() {
                   <VideoTile
                     participantId={participantId || "local"}
                     stream={localStream}
-                    displayName={currentMeeting?.host?.name || "You"}
+                    displayName={displayName || "You"}
                     isMuted={isMuted}
                     isVideoOff={isVideoOff}
                     isLocal={true}
@@ -581,7 +581,7 @@ export default function MeetingRoomPage() {
                   <VideoTile
                     participantId={participantId || "local"}
                     stream={localStream}
-                    displayName={currentMeeting?.host?.name || "You"}
+                    displayName={displayName || "You"}
                     isMuted={isMuted}
                     isVideoOff={isVideoOff}
                     isLocal={true}
@@ -611,7 +611,7 @@ export default function MeetingRoomPage() {
               <VideoTile
                 participantId={participantId || "local"}
                 stream={localStream}
-                displayName={currentMeeting?.host?.name || "You"}
+                displayName={displayName || "You"}
                 isMuted={isMuted}
                 isVideoOff={isVideoOff}
                 isLocal={true}
@@ -641,7 +641,7 @@ export default function MeetingRoomPage() {
         {showParticipants && (
           <ParticipantsPanel
             participants={remoteParticipants}
-            localDisplayName={currentMeeting?.host?.name || "You"}
+            localDisplayName={displayName || "You"}
             isHost={isHost}
             isLocked={isLocked}
             onMuteAll={handleMuteAll}

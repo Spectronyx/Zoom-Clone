@@ -462,6 +462,7 @@ def join_meeting(request, meeting_code):
     return Response(JoinMeetingResponseSerializer({
         "participant_id": participant.id,
         "instance_id": instance.id,
+        "display_name": participant.display_name,
         "meeting": meeting,
         "is_host": is_host,
     }).data)

@@ -8,6 +8,7 @@ interface MeetingState {
   currentMeeting: Meeting | null;
   instanceId: string | null;
   participantId: string | null;
+  displayName: string | null;
   isHost: boolean;
   isLocked: boolean;
   meetingCode: string | null;
@@ -29,7 +30,7 @@ interface MeetingState {
   elapsedSeconds: number;
 
   // Actions
-  setMeetingSession: (data: JoinMeetingResponse & { meetingCode: string }) => void;
+  setMeetingSession: (data: JoinMeetingResponse & { meetingCode: string; displayName?: string }) => void;
   setIsHost: (isHost: boolean) => void;
   setIsLocked: (isLocked: boolean) => void;
   addParticipant: (p: Participant) => void;
@@ -49,6 +50,7 @@ const initialState = {
   currentMeeting: null,
   instanceId: null,
   participantId: null,
+  displayName: null,
   isHost: false,
   isLocked: false,
   meetingCode: null,
@@ -70,6 +72,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
       currentMeeting: data.meeting,
       instanceId: data.instance_id,
       participantId: data.participant_id,
+      displayName: data.displayName || data.display_name || null,
       isHost: data.is_host,
       isLocked: data.meeting.is_locked || false,
       meetingCode: data.meetingCode,

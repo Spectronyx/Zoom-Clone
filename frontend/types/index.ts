@@ -58,6 +58,7 @@ export interface JoinMeetingRequest {
 export interface JoinMeetingResponse {
   participant_id: string;
   instance_id: string;
+  display_name: string;
   meeting: Meeting;
   is_host: boolean;
 }

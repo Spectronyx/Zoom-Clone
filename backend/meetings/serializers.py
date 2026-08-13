@@ -78,6 +78,7 @@ class JoinMeetingSerializer(serializers.Serializer):
 class JoinMeetingResponseSerializer(serializers.Serializer):
     participant_id = serializers.CharField()
     instance_id = serializers.CharField()
+    display_name = serializers.CharField()
     meeting = MeetingSerializer()
     is_host = serializers.BooleanField()
 
