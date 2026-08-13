@@ -44,7 +44,7 @@ def mark_participant_left_in_db(participant_id):
                 inst.duration_seconds = int((now - inst.started_at).total_seconds())
                 inst.save(update_fields=['ended_at', 'duration_seconds'])
                 meeting = inst.meeting
-                meeting.status = 'ended'
+                meeting.status = MeetingStatus.ENDED
                 meeting.save(update_fields=['status'])
     except Exception as e:
         print("[Consumer] Exception updating left_at on disconnect:", e)

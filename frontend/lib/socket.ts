@@ -22,7 +22,6 @@ export class SignalingSocket {
   private ws: WebSocket | null = null;
   private handlers: Map<string, MessageHandler[]> = new Map();
   private instanceId: string;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(instanceId: string) {
     this.instanceId = instanceId;
@@ -84,9 +83,6 @@ export class SignalingSocket {
   }
 
   disconnect(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-    }
     if (this.ws) {
       this.ws.close();
       this.ws = null;

@@ -154,13 +154,13 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   toggleParticipants: () =>
     set((state) => ({
       showParticipants: !state.showParticipants,
-      showChat: state.showParticipants ? state.showChat : false,
+      showChat: !state.showParticipants ? false : state.showChat,
     })),
 
   toggleChat: () =>
     set((state) => ({
       showChat: !state.showChat,
-      showParticipants: state.showChat ? state.showChat : false,
+      showParticipants: !state.showChat ? false : state.showParticipants,
     })),
 
   setElapsed: (s) => set({ elapsedSeconds: s }),

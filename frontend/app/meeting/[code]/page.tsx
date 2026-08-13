@@ -220,13 +220,19 @@ export default function MeetingRoomPage() {
   }, [instanceId, participantId]);
 
   // ─── Elapsed timer ────────────────────────────────────────────────────────
+  const timerStartRef = useRef<number | null>(null);
   useEffect(() => {
     if (!instanceId) return;
+    if (!timerStartRef.current) {
+      timerStartRef.current = Date.now() - elapsedSeconds * 1000;
+    }
+    const startMs = timerStartRef.current;
     const interval = setInterval(() => {
-      setElapsed(elapsedSeconds + 1);
+      setElapsed(Math.floor((Date.now() - startMs) / 1000));
     }, 1000);
     return () => clearInterval(interval);
-  }, [instanceId, elapsedSeconds, setElapsed]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instanceId]);
 
   // ─── Auto-hide controls ──────────────────────────────────────────────────
   useEffect(() => {

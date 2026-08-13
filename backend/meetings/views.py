@@ -1,8 +1,9 @@
 """REST API views for meeting and auth endpoints.
 
-Supports optional JWT auth while preserving default-user fallback for anonymous visitors.
+Supports JWT auth with proper audience/issuer validation.
 """
 
+import os
 import random
 import secrets
 from datetime import datetime, timezone, timedelta
@@ -10,9 +11,10 @@ import jwt
 from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.throttling import AnonRateThrottle
 
 from .models import User, Meeting, MeetingInstance, Participant, MeetingType, MeetingStatus
 from .serializers import (
@@ -23,16 +25,34 @@ from .serializers import (
 )
 
 JWT_SECRET = getattr(settings, 'SECRET_KEY', 'meetclone-jwt-secret-key-2026')
+JWT_ISSUER = 'meetclone'
+JWT_AUDIENCE = 'meetclone-api'
+JWT_EXPIRY_HOURS = int(os.environ.get('JWT_EXPIRY_HOURS', '6'))
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+
+
+# ─── Custom throttle for auth endpoints ─────────────────────────────────────────
+
+class AuthRateThrottle(AnonRateThrottle):
+    rate = '10/minute'
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────────
 
 def generate_meeting_code() -> str:
-    """Generate a Zoom-style meeting code like '832 1049 5721'."""
-    p1 = str(random.randint(100, 999))
-    p2 = str(random.randint(1000, 9999))
-    p3 = str(random.randint(1000, 9999))
-    return f"{p1} {p2} {p3}"
+    """Generate a Zoom-style meeting code like '832 1049 5721'. Retries on collision."""
+    for _ in range(10):
+        p1 = str(random.randint(100, 999))
+        p2 = str(random.randint(1000, 9999))
+        p3 = str(random.randint(1000, 9999))
+        code = f"{p1} {p2} {p3}"
+        if not Meeting.objects.filter(meeting_code=code).exists():
+            return code
+    # Fallback to secrets-based code if collisions persist
+    num = secrets.randbelow(90000000000) + 10000000000
+    s = str(num)
+    return f"{s[:3]} {s[3:7]} {s[7:]}"
 
 
 def get_default_user() -> User:
@@ -56,14 +76,34 @@ def get_request_user(request) -> User:
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
         try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            payload = jwt.decode(
+                token, JWT_SECRET, algorithms=['HS256'],
+                issuer=JWT_ISSUER, audience=JWT_AUDIENCE,
+            )
             user_id = payload.get('user_id')
             user = User.objects.filter(id=user_id).first()
             if user:
                 return user
-        except Exception:
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             pass
     return get_default_user()
+
+
+def get_authenticated_user(request) -> User | None:
+    """Retrieve user ONLY if a valid JWT is present. Returns None for anonymous."""
+    auth_header = request.headers.get('Authorization') or request.META.get('HTTP_AUTHORIZATION')
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        try:
+            payload = jwt.decode(
+                token, JWT_SECRET, algorithms=['HS256'],
+                issuer=JWT_ISSUER, audience=JWT_AUDIENCE,
+            )
+            user_id = payload.get('user_id')
+            return User.objects.filter(id=user_id).first()
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            pass
+    return None
 
 
 def generate_jwt_token(user: User) -> str:
@@ -71,9 +111,17 @@ def generate_jwt_token(user: User) -> str:
         'user_id': str(user.id),
         'email': user.email,
         'name': user.name,
-        'exp': datetime.now(timezone.utc) + timedelta(days=1),
+        'iss': JWT_ISSUER,
+        'aud': JWT_AUDIENCE,
+        'exp': datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRY_HOURS),
+        'iat': datetime.now(timezone.utc),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
+
+def get_frontend_base_url() -> str:
+    """Return the frontend base URL from env, stripping trailing slash."""
+    return FRONTEND_URL.rstrip('/')
 
 
 def find_meeting_by_code(meeting_code: str):
@@ -86,16 +134,21 @@ def find_meeting_by_code(meeting_code: str):
 
     if len(cleaned) == 11:
         formatted = f"{cleaned[:3]} {cleaned[3:7]} {cleaned[7:]}"
-        meeting = Meeting.objects.filter(meeting_code=formatted).first()
-        if meeting:
-            return meeting
+        return Meeting.objects.filter(meeting_code=formatted).first()
 
-    return Meeting.objects.filter(meeting_code__icontains=cleaned).first()
+    return None
+
+
+def verify_host_ownership(request, meeting) -> bool:
+    """Check if the requesting user is the host of the meeting."""
+    user = get_authenticated_user(request) or get_request_user(request)
+    return user is not None and meeting.host_id == user.id
 
 
 # ─── Auth Endpoints ─────────────────────────────────────────────────────────────
 
 @api_view(['POST'])
+@throttle_classes([AuthRateThrottle])
 def signup_view(request):
     """Sign up a new user."""
     serializer = SignupSerializer(data=request.data)
@@ -122,6 +175,7 @@ def signup_view(request):
 
 
 @api_view(['POST'])
+@throttle_classes([AuthRateThrottle])
 def login_view(request):
     """Authenticate existing user with email and password."""
     serializer = LoginSerializer(data=request.data)
@@ -145,7 +199,7 @@ def login_view(request):
 @api_view(['GET'])
 def auth_me_view(request):
     """Return currently authenticated user from JWT token (or default user)."""
-    user = get_request_user(request) or get_default_user()
+    user = get_request_user(request)
     return Response(UserSerializer(user).data)
 
 
@@ -154,16 +208,17 @@ def auth_me_view(request):
 @api_view(['GET'])
 def get_current_user(request):
     """Get the active user (JWT or default fallback)."""
-    user = get_request_user(request) or get_default_user()
+    user = get_request_user(request)
     return Response(UserSerializer(user).data)
 
 
 @api_view(['POST'])
 def instant_meeting(request):
     """Create and start an instant meeting."""
-    user = get_request_user(request) or get_default_user()
+    user = get_request_user(request)
     code = generate_meeting_code()
-    link = f"http://localhost:3000/meeting/{code.replace(' ', '')}"
+    base_url = get_frontend_base_url()
+    link = f"{base_url}/meeting/{code.replace(' ', '')}"
 
     meeting = Meeting.objects.create(
         meeting_code=code,
@@ -184,7 +239,7 @@ def schedule_meeting(request):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
 
-    user = get_request_user(request) or get_default_user()
+    user = get_request_user(request)
     start_at = data['scheduled_start_at']
 
     # Check if a meeting with the exact same host and start date/time already exists
@@ -201,7 +256,8 @@ def schedule_meeting(request):
         )
 
     code = generate_meeting_code()
-    link = f"http://localhost:3000/meeting/{code.replace(' ', '')}"
+    base_url = get_frontend_base_url()
+    link = f"{base_url}/meeting/{code.replace(' ', '')}"
 
     meeting = Meeting.objects.create(
         meeting_code=code,
@@ -257,9 +313,12 @@ def upcoming_meetings(request):
 
 @api_view(['GET'])
 def recent_meetings(request):
-    """List past meeting instances."""
+    """List past meeting instances for the current user."""
+    user = get_request_user(request)
+
     instances = MeetingInstance.objects.filter(
-        ended_at__isnull=False
+        ended_at__isnull=False,
+        meeting__host=user,
     ).select_related('meeting').order_by('-ended_at')[:10]
 
     result = []
@@ -290,6 +349,11 @@ def meeting_details(request, meeting_code):
         )
 
     if request.method == 'DELETE':
+        if not verify_host_ownership(request, meeting):
+            return Response(
+                {"detail": "Only the host can cancel this meeting"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         if meeting.status in [MeetingStatus.LIVE, MeetingStatus.ENDED, MeetingStatus.CANCELLED]:
             return Response(
                 {"detail": "Cannot cancel a meeting in progress, already ended, or cancelled"},
@@ -405,7 +469,7 @@ def join_meeting(request, meeting_code):
 
 @api_view(['POST'])
 def lock_meeting(request, meeting_code):
-    """Toggle lock state of a meeting."""
+    """Toggle lock state of a meeting. Only the host should do this."""
     meeting = find_meeting_by_code(meeting_code)
     if not meeting:
         return Response({"detail": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -468,6 +532,12 @@ def cancel_meeting(request, meeting_code):
         return Response(
             {"detail": "Meeting not found"},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if not verify_host_ownership(request, meeting):
+        return Response(
+            {"detail": "Only the host can cancel this meeting"},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
     if meeting.status in [MeetingStatus.LIVE, MeetingStatus.ENDED, MeetingStatus.CANCELLED]:

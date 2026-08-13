@@ -4,19 +4,25 @@ Django settings for MeetClone project.
 Configured for:
 - Django REST Framework (API)
 - Django Channels (WebSocket signaling)
-- CORS for Next.js frontend on localhost:3000
-- SQLite database
+- CORS for Next.js frontend
+- Production-ready environment variable configuration
 """
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-meetclone-dev-key-change-in-production'
+# ─── Security ────────────────────────────────────────────────────────────────────
 
-DEBUG = True
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-meetclone-dev-key-change-in-production'
+)
 
-ALLOWED_HOSTS = ["*"]
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # ─── Installed Apps ─────────────────────────────────────────────────────────────
 
@@ -41,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be high up
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static file serving in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # Disable CSRF for API-only backend (no auth, no forms)
@@ -79,7 +86,6 @@ CHANNEL_LAYERS = {
     }
 }
 
-import os
 import dj_database_url
 
 # ─── Database ────────────────────────────────────────────────────────────────────
@@ -102,10 +108,26 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',
+        'auth_attempts': '10/minute',
+    },
     'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S.%fZ',
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# ─── CORS ────────────────────────────────────────────────────────────────────────
+
+_frontend_url = os.environ.get('FRONTEND_URL', '')
+if _frontend_url:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _frontend_url.split(',')]
+    CORS_ALLOW_ALL_ORIGINS = False
+else:
+    # Development fallback
+    CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
 
 # ─── Internationalization ────────────────────────────────────────────────────────
@@ -118,5 +140,7 @@ USE_TZ = True
 # ─── Static Files ────────────────────────────────────────────────────────────────
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -41,7 +41,7 @@ class MeetingSerializer(serializers.ModelSerializer):
 
 
 class ScheduleMeetingSerializer(serializers.Serializer):
-    topic = serializers.CharField(max_length=500, default="Rajneesh Sharma's Meeting")
+    topic = serializers.CharField(max_length=500, default="My Meeting")
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     scheduled_start_at = serializers.DateTimeField()
     duration_minutes = serializers.IntegerField(default=60, min_value=15, max_value=480)
