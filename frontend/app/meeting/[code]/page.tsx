@@ -49,6 +49,18 @@ export default function MeetingRoomPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [admissionQueue, setAdmissionQueue] = useState<Array<{ participant_id: string; display_name: string }>>([]);
 
+  // ─── Lock body scrolling in meeting room ──────────────────────────────
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalHeight = document.body.style.height;
+    document.body.style.overflow = "hidden";
+    document.body.style.height = "100vh";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.height = originalHeight;
+    };
+  }, []);
+
   // ─── Restore media stream if null ─────────────────────────────────────────
   useEffect(() => {
     if (!localStream) {
@@ -461,7 +473,7 @@ export default function MeetingRoomPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-zoom-dark flex flex-col overflow-hidden select-none">
+    <div className="fixed inset-0 h-screen h-[100dvh] w-screen bg-zoom-dark flex flex-col overflow-hidden select-none z-30">
       {/* Real-Time Admission Request Banner for Host */}
       {isHost && admissionQueue.length > 0 && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-zoom-blue shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-5 animate-bounce-short text-white backdrop-blur-md">

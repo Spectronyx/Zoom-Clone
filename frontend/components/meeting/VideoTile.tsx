@@ -61,7 +61,7 @@ export default function VideoTile({
   return (
     <div
       className={`
-        group relative bg-zoom-dark-tile rounded-xl overflow-hidden flex items-center justify-center transition-all duration-200
+        group relative bg-zoom-dark-tile rounded-xl overflow-hidden flex items-center justify-center transition-all duration-200 min-h-0 min-w-0 max-h-full max-w-full
         ${isPinned ? "ring-2 ring-amber-400 shadow-lg" : isActiveSpeaker ? "ring-2 ring-zoom-blue" : ""}
         ${className}
       `}
