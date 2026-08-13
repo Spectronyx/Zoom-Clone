@@ -14,7 +14,7 @@ import json
 from datetime import datetime, timezone
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import Participant, ChatMessage, MeetingInstance
+from .models import Participant, ChatMessage, MeetingInstance, MeetingStatus
 
 
 # Global mapping: channel_name -> participant info

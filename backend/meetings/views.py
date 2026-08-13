@@ -145,7 +145,7 @@ def login_view(request):
 @api_view(['GET'])
 def auth_me_view(request):
     """Return currently authenticated user from JWT token (or default user)."""
-    user = get_request_user(request)
+    user = get_request_user(request) or get_default_user()
     return Response(UserSerializer(user).data)
 
 
@@ -154,14 +154,14 @@ def auth_me_view(request):
 @api_view(['GET'])
 def get_current_user(request):
     """Get the active user (JWT or default fallback)."""
-    user = get_request_user(request)
+    user = get_request_user(request) or get_default_user()
     return Response(UserSerializer(user).data)
 
 
 @api_view(['POST'])
 def instant_meeting(request):
     """Create and start an instant meeting."""
-    user = get_request_user(request)
+    user = get_request_user(request) or get_default_user()
     code = generate_meeting_code()
     link = f"http://localhost:3000/meeting/{code.replace(' ', '')}"
 
@@ -184,7 +184,7 @@ def schedule_meeting(request):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
 
-    user = get_request_user(request)
+    user = get_request_user(request) or get_default_user()
     start_at = data['scheduled_start_at']
 
     # Check if a meeting with the exact same host and start date/time already exists
@@ -378,10 +378,15 @@ def join_meeting(request, meeting_code):
     user = None
     if data.get('user_id'):
         user = User.objects.filter(id=data['user_id']).first()
-    if not user:
-        user = get_request_user(request)
 
-    is_host = (meeting.host_id == user.id) if user else False
+    has_active_participants = instance.participants.filter(left_at__isnull=True).exists()
+
+    if user and meeting.host_id == user.id:
+        is_host = True
+    elif not has_active_participants:
+        is_host = True
+    else:
+        is_host = False
 
     participant = Participant.objects.create(
         meeting_instance=instance,
