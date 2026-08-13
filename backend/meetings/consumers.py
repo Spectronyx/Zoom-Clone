@@ -481,6 +481,8 @@ class MeetingConsumer(AsyncWebsocketConsumer):
         })
 
     async def broadcast_chat_message(self, event):
+        if event.get("sender_channel") == self.channel_name:
+            return
         await self.send_json({
             "type": "chat-message",
             "participant_id": event["participant_id"],

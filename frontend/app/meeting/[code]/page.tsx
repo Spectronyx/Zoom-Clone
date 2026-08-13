@@ -72,13 +72,7 @@ export default function MeetingRoomPage() {
       setMeetingSession(session);
       sessionStorage.removeItem("meetingSession");
     } else if (!instanceId) {
-      api.getCurrentUser().then((user) => {
-        api.joinMeeting(code, { display_name: user.name, user_id: user.id })
-          .then((res) => {
-            setMeetingSession({ ...res, meetingCode: code });
-          })
-          .catch(() => router.push(`/meeting/${code}/lobby`));
-      }).catch(() => router.push(`/meeting/${code}/lobby`));
+      router.push(`/meeting/${code}/lobby`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
@@ -391,7 +385,8 @@ export default function MeetingRoomPage() {
   }, [removeParticipant]);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const inviteUrl = `${window.location.origin}/meeting/${code}/lobby`;
+    navigator.clipboard.writeText(inviteUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };

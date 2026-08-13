@@ -33,7 +33,8 @@ export default function InviteModal({
   const [invitedContacts, setInvitedContacts] = useState<Record<string, boolean>>({});
 
   const cleanCode = meetingCode.replace(/\s/g, "");
-  const inviteLink = `http://localhost:3000/meeting/${cleanCode}/lobby`;
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://zoom-clone-spectronyx.vercel.app";
+  const inviteLink = `${origin}/meeting/${cleanCode}/lobby`;
 
   const fullInvitation = `${hostName} is inviting you to a live MeetClone video meeting.
 

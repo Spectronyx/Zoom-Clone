@@ -45,11 +45,13 @@ export default function VideoTile({
 
   useEffect(() => {
     if (videoRef.current) {
-      if (stream && shouldShowVideo) {
+      if (stream) {
         if (videoRef.current.srcObject !== stream) {
           videoRef.current.srcObject = stream;
         }
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch((err) => {
+          console.warn("Video play error:", err);
+        });
       } else {
         videoRef.current.srcObject = null;
       }
@@ -64,15 +66,19 @@ export default function VideoTile({
         ${className}
       `}
     >
-      {shouldShowVideo ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={isLocal}
-          className={`w-full h-full object-cover ${isLocal ? "video-mirror" : ""}`}
-        />
-      ) : (
+      {/* Video Element - Always Mounted to Ensure Audio Tracks Play Continuously */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={isLocal}
+        className={`w-full h-full object-cover ${isLocal ? "video-mirror" : ""} ${
+          shouldShowVideo ? "block" : "hidden"
+        }`}
+      />
+
+      {/* Avatar Fallback Overlay when Video is Off */}
+      {!shouldShowVideo && (
         <div className="w-full h-full flex items-center justify-center bg-zoom-dark-tile min-h-[160px]">
           <Avatar name={displayName} color={avatarColor} size="xl" />
         </div>
