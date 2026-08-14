@@ -131,19 +131,29 @@ erDiagram
 
 ---
 
-## 💡 Assumptions Made
+---
 
-1. **Authentication**: Auth flow is omitted per spec. The application operates under a seeded default host (`Rajneesh Sharma`, `rajneesh@meetclone.dev`).
-2. **WebRTC Topology**: Mesh P2P topology is implemented. Each client connects directly to every other participant, ideal for group sizes up to 6 participants.
-3. **NAT Traversal**: Public Google STUN servers (`stun:stun.l.google.com:19302`) are used for candidate discovery. Symmetric NAT environments would require TURN server relay.
+## 💡 Assumptions, Mocked Data & Technical Notes
+
+### 1. Assumptions Made
+- **WebRTC P2P Mesh Topology**: Built using native browser WebRTC (`RTCPeerConnection`) with mesh signaling over Django Channels. Ideal for small-to-medium calls (up to 8 concurrent participants). Selective Forwarding Units (SFUs) like Mediasoup would be recommended for 50+ user webinars.
+- **NAT Traversal**: Utilizes public Google STUN servers (`stun:stun.l.google.com:19302`) for candidate discovery. Strict enterprise networks with symmetric NAT would require TURN server relay (e.g. Coturn).
+- **Authentication Flow**: Full JWT/Session auth endpoints (`/api/auth/signup`, `/api/auth/login`, `/api/auth/me`) are available. Unauthenticated or instant guest joins default to the seeded host profile (`Rajneesh Sharma`).
+
+### 2. Mocked & Seeded Data
+- **Database Seed Data**: Pre-populated via `python manage.py seed` with **7 Users**, **20 Meetings**, **14 Meeting Instances**, **30 Participant records**, and **18 Chat messages** in `db.sqlite3`.
+- **Interactive Placeholders**: Secondary marketing/workspace features (AI Notes generation, Phone dialer, Contacts sync) are connected to dynamic "Coming Soon" toast notifications, ensuring every clickable UI element yields instant visual feedback without broken links.
+
+### 3. Technical & Security Notes
+- **Strict Hardware Release**: Camera and microphone media tracks (`MediaStreamTrack`) are explicitly stopped (`t.stop()`) and disabled on room leave, post-meeting redirect, browser back button, or participant removal, turning off camera hardware LEDs immediately.
+- **5-Table Schema**: Clean separation between persistent reusable meeting definitions (`meetings`) and active live occurrences (`meeting_instances`), enabling historical meeting tracking and duration computation.
 
 ---
 
 ## ⚠️ Known Limitations & Future Enhancements
 
-- **SFU/MCU Upgrade**: Mesh topology works cleanly for small rooms; implementing a Selective Forwarding Unit (SFU) like Mediasoup/Janus would enable 50+ participant calls.
-- **TURN Server Support**: Adding Coturn for TURN relay in strict corporate firewalls.
-- **JWT Auth**: Full OAuth2 / JWT authentication flow with registration, password reset, and user profiles.
+- **SFU/MCU Upgrade**: Mesh topology works cleanly for small rooms; implementing an SFU (Mediasoup / Janus) would scale calls to 50+ participants.
+- **TURN Server Relay**: Integration of Coturn for strict corporate firewall traversal.
 - **Cloud Recording**: Server-side recording of video/audio streams via FFmpeg.
 - **Breakout Rooms**: Sub-room grouping & host broadcasting.
 
