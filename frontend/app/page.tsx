@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import JoinMeetingModal from "@/components/modals/JoinMeetingModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
+import AuthenticatedDashboard from "@/components/dashboard/AuthenticatedDashboard";
 import { api } from "@/lib/api";
 import { User as UserType } from "@/types";
 
@@ -103,6 +104,10 @@ export default function ZoomHomePage() {
     }
     checkAuth();
   }, []);
+
+  if (currentUser) {
+    return <AuthenticatedDashboard initialUser={currentUser} />;
+  }
 
   const handleNextCarousel = () => {
     setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
