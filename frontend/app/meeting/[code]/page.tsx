@@ -243,6 +243,7 @@ export default function MeetingRoomPage() {
     return () => {
       rtcManager.destroy();
       socket.disconnect();
+      useMediaStore.getState().reset();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instanceId, participantId]);
@@ -368,9 +369,9 @@ export default function MeetingRoomPage() {
     }
     rtcRef.current?.destroy();
     socketRef.current?.disconnect();
-    resetMedia();
+    useMediaStore.getState().reset();
     setPostMeeting(true);
-  }, [meetingCode, participantId, resetMedia]);
+  }, [meetingCode, participantId]);
 
   const handleSendChat = useCallback((message: string) => {
     socketRef.current?.send({ type: "chat-message", message });
@@ -460,6 +461,7 @@ export default function MeetingRoomPage() {
           </p>
           <button
             onClick={() => {
+              useMediaStore.getState().reset();
               resetMeeting();
               router.push("/");
             }}

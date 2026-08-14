@@ -89,11 +89,7 @@ export default function LobbyPage() {
 
     return () => {
       if (!isJoiningRef.current) {
-        const currentStream = useMediaStore.getState().localStream;
-        if (currentStream) {
-          currentStream.getTracks().forEach((t) => t.stop());
-        }
-        useMediaStore.getState().setLocalStream(null);
+        useMediaStore.getState().reset();
       }
       if (socketRef.current) {
         socketRef.current.disconnect();

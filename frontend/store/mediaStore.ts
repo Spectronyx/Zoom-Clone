@@ -73,8 +73,22 @@ export const useMediaStore = create<MediaState>((set, get) => ({
 
   reset: () => {
     const { localStream, screenStream } = get();
-    localStream?.getTracks().forEach((t) => t.stop());
-    screenStream?.getTracks().forEach((t) => t.stop());
+    if (localStream) {
+      localStream.getTracks().forEach((t) => {
+        try {
+          t.stop();
+          t.enabled = false;
+        } catch {}
+      });
+    }
+    if (screenStream) {
+      screenStream.getTracks().forEach((t) => {
+        try {
+          t.stop();
+          t.enabled = false;
+        } catch {}
+      });
+    }
     set({
       localStream: null,
       screenStream: null,
