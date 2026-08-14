@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   Search, Globe, ChevronDown, X, Sparkles, Video, Calendar,
   MessageSquare, Phone, Shield, ArrowRight, ChevronLeft, ChevronRight,
-  ExternalLink, User, Lock, Play, CheckCircle2, Award, FileText, LayoutGrid
+  ExternalLink, User, Lock, Play, CheckCircle2, Award, FileText, LayoutGrid, Menu
 } from "lucide-react";
 import JoinMeetingModal from "@/components/modals/JoinMeetingModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
@@ -93,6 +93,7 @@ export default function ZoomHomePage() {
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [activeNavDropdown, setActiveNavDropdown] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const showComingSoon = (featureName: string) => {
@@ -168,7 +169,13 @@ export default function ZoomHomePage() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Left Logo & Primary Nav */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 sm:gap-8">
+            <button
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              className="lg:hidden text-slate-700 hover:text-[#0B5CFF] p-1 rounded-lg cursor-pointer"
+            >
+              {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
             <Link href="/" className="flex items-center gap-1 text-[#0B5CFF] font-black text-2xl tracking-tighter">
               <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B5CFF]">zoom</span>
             </Link>
@@ -287,6 +294,81 @@ export default function ZoomHomePage() {
           </div>
         </div>
       </header>
+
+      {/* ─── MOBILE NAV DRAWER OVERLAY ─────────────────────────────────── */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 z-50 lg:hidden animate-in fade-in" onClick={() => setMobileNavOpen(false)}>
+          <div className="w-4/5 max-w-xs bg-white h-full p-5 space-y-4 overflow-y-auto animate-in slide-in-from-left" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-[#0B5CFF] font-black text-xl tracking-tighter">zoom</span>
+              <button onClick={() => setMobileNavOpen(false)} className="p-1 text-slate-500">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-1 text-sm font-semibold text-slate-800">
+              <button
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  router.push("/meetings");
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-blue-50 text-[#0B5CFF] font-bold flex items-center justify-between"
+              >
+                <span>Meetings</span>
+                <Video size={16} />
+              </button>
+              <button
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  router.push("/chat");
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-blue-50 text-slate-800 flex items-center justify-between"
+              >
+                <span>Team Chat</span>
+                <MessageSquare size={16} />
+              </button>
+              <button
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  router.push("/whiteboards");
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-blue-50 text-slate-800 flex items-center justify-between"
+              >
+                <span>Whiteboards</span>
+                <FileText size={16} />
+              </button>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <button
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  setJoinModalOpen(true);
+                }}
+                className="w-full py-2.5 text-xs font-bold text-[#0B5CFF] border border-[#0B5CFF] rounded-full text-center"
+              >
+                Join a Meeting
+              </button>
+              <button
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  handleNewInstantMeeting();
+                }}
+                className="w-full py-2.5 text-xs font-bold text-white bg-[#0B5CFF] rounded-full text-center"
+              >
+                Host Instant Meeting
+              </button>
+              <Link
+                href="/login"
+                onClick={() => setMobileNavOpen(false)}
+                className="block w-full py-2.5 text-xs font-bold text-slate-700 bg-slate-100 rounded-full text-center mt-2"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── HERO SECTION (DARK DEEP BLUE GRADIENT) ────────────────────────── */}
       <section className="relative bg-gradient-to-b from-[#0B152C] via-[#0E1C3D] to-[#162A5A] text-white pt-16 pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden">

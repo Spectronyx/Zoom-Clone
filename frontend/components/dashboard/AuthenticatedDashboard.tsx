@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import {
   Search, Video, Calendar, Plus, Copy, Check, ExternalLink,
   ChevronDown, ChevronRight, MessageSquare, Shield, HelpCircle,
-  FileText, Clock, Trash2, Play, User as UserIcon, Sparkles, Mic
+  FileText, Clock, Trash2, Play, User as UserIcon, Sparkles, Mic,
+  Menu, X
 } from "lucide-react";
 import JoinMeetingModal from "@/components/modals/JoinMeetingModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
@@ -32,6 +33,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
   const [webAppDropdownOpen, setWebAppDropdownOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [activeSidebarItem, setActiveSidebarItem] = useState("home");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showComingSoon = (featureName: string) => {
@@ -86,11 +88,11 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
   const pmiDisplay = user?.id ? `269 ${user.id.slice(0, 3)} ${user.id.slice(3, 7)}` : "269 316 4104";
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC] text-slate-900 font-sans select-none flex flex-col">
+    <div className="min-h-screen bg-[#F7F9FC] text-slate-900 font-sans select-none flex flex-col overflow-x-hidden">
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
 
-      {/* ─── 1. TOP BLACK UTILITY HEADER ────────────────────────────────────── */}
-      <div className="bg-[#0B1220] text-slate-300 text-[11px] px-6 py-1.5 flex items-center justify-end gap-6 font-medium">
+      {/* ─── 1. TOP BLACK UTILITY HEADER (HIDDEN ON SMALL MOBILE) ─────────────── */}
+      <div className="bg-[#0B1220] text-slate-300 text-[11px] px-4 md:px-6 py-1.5 hidden md:flex items-center justify-end gap-6 font-medium">
         <button
           onClick={() => showComingSoon("Global Search")}
           className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
@@ -119,13 +121,20 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         </button>
       </div>
 
-      {/* ─── 2. MAIN WHITE NAVIGATION BAR ─────────────────────────────────── */}
-      <header className="bg-white border-b border-slate-200 px-6 h-14 flex items-center justify-between sticky top-0 z-40 shadow-xs">
-        {/* Left Branding & Links */}
-        <div className="flex items-center gap-8">
+      {/* ─── 2. MAIN NAVIGATION HEADER ─────────────────────────────────── */}
+      <header className="bg-white border-b border-slate-200 px-4 md:px-6 h-14 flex items-center justify-between sticky top-0 z-40 shadow-xs">
+        {/* Left Branding & Menu Toggle */}
+        <div className="flex items-center gap-3 md:gap-8">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-slate-700 hover:text-[#0B5CFF] p-1 rounded-lg cursor-pointer"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
           <Link href="/" className="text-[#0B5CFF] font-black text-2xl tracking-tighter">
             zoom
           </Link>
+
           <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-700">
             <div className="relative">
               <button
@@ -180,10 +189,10 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         </div>
 
         {/* Right Header Actions */}
-        <div className="flex items-center gap-5 text-xs font-semibold text-slate-700">
+        <div className="flex items-center gap-3 sm:gap-5 text-xs font-semibold text-slate-700">
           <button
             onClick={() => setScheduleModalOpen(true)}
-            className="hover:text-[#0B5CFF] transition-colors cursor-pointer"
+            className="hover:text-[#0B5CFF] transition-colors cursor-pointer hidden sm:block"
           >
             Schedule
           </button>
@@ -235,42 +244,10 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             )}
           </div>
 
-          {/* Web App Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setWebAppDropdownOpen(!webAppDropdownOpen)}
-              className="flex items-center gap-1 hover:text-[#0B5CFF] cursor-pointer"
-            >
-              Web App <ChevronDown size={12} />
-            </button>
-            {webAppDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-1 z-50 animate-in fade-in">
-                <button
-                  onClick={() => {
-                    setWebAppDropdownOpen(false);
-                    router.push("/meetings");
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium"
-                >
-                  Launch Meetings Dashboard
-                </button>
-                <button
-                  onClick={() => {
-                    setWebAppDropdownOpen(false);
-                    showComingSoon("Desktop Client Sync");
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium"
-                >
-                  Download Desktop App
-                </button>
-              </div>
-            )}
-          </div>
-
           {/* User Profile Avatar Icon */}
           <div
             onClick={() => showComingSoon("Account Settings & Profile")}
-            className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer border border-amber-300"
+            className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer border border-amber-300 shrink-0"
             title="Profile Settings"
           >
             {user?.name?.[0]?.toUpperCase() || "R"}
@@ -278,9 +255,72 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         </div>
       </header>
 
+      {/* ─── MOBILE NAVIGATION DRAWER OVERLAY ─────────────────────────────── */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 z-50 md:hidden animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
+          <div className="w-4/5 max-w-xs bg-white h-full p-5 space-y-4 overflow-y-auto animate-in slide-in-from-left" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-[#0B5CFF] font-black text-xl tracking-tighter">zoom</span>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-slate-500">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-1">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/meetings");
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg bg-blue-50 text-[#0B5CFF] font-bold text-xs flex items-center justify-between"
+              >
+                <span>Meetings</span>
+                <Video size={14} />
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/chat");
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-between"
+              >
+                <span>Team Chat</span>
+                <MessageSquare size={14} />
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/whiteboards");
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-between"
+              >
+                <span>Whiteboards</span>
+                <FileText size={14} />
+              </button>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 space-y-1 text-xs text-slate-600 font-medium">
+              <p className="text-[10px] font-bold uppercase text-slate-400 px-3 mb-1">Products</p>
+              {["AI Companion", "Recordings", "Summaries", "Clips", "Tasks", "Scheduler"].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    showComingSoon(item);
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-slate-100 rounded-lg"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── 3. DASHBOARD MAIN BODY (SIDEBAR + CONTENT) ─────────────────────── */}
       <div className="flex-1 flex max-w-[1400px] w-full mx-auto">
-        {/* LEFT SIDEBAR MENU */}
+        {/* DESKTOP SIDEBAR MENU */}
         <aside className="w-56 bg-white border-r border-slate-200 p-4 shrink-0 hidden md:block">
           <button
             onClick={() => {
@@ -382,28 +422,28 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         </aside>
 
         {/* WORKSPACE CONTENT GRID */}
-        <main className="flex-1 p-6 lg:p-8 space-y-6 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto w-full min-w-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* LEFT 2 COLUMNS STACK */}
             <div className="lg:col-span-2 space-y-6">
               {/* USER PROFILE HEADER CARD */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex items-center justify-between">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-bold text-xl border-2 border-amber-200 shadow-sm">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-bold text-lg sm:text-xl border-2 border-amber-200 shadow-sm shrink-0">
                     {user?.name?.[0]?.toUpperCase() || "R"}
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900">{user?.name || "Rajneesh Sharma"}</h1>
+                    <h1 className="text-lg sm:text-xl font-bold text-slate-900">{user?.name || "Rajneesh Sharma"}</h1>
                     <p className="text-xs text-slate-500 mt-0.5">
                       Plan: <span className="font-semibold text-slate-700">Workplace Basic</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                   <button
                     onClick={() => showComingSoon("Plan Management")}
-                    className="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
                   >
                     Manage Plan
                   </button>
@@ -417,15 +457,15 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
               </div>
 
               {/* WORKPLACE PRO PROMO BANNER */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0B5CFF]">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="space-y-3 flex-1 text-center sm:text-left">
+                  <div className="inline-flex sm:flex items-center gap-1.5 text-xs font-bold text-[#0B5CFF]">
                     <span className="bg-[#0B5CFF] text-white px-1.5 py-0.5 rounded text-[10px] font-black tracking-tighter">
                       zoom
                     </span>
                     Workplace Pro
                   </div>
-                  <h2 className="text-lg font-bold text-slate-900">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">
                     Back-to-school savings are on!
                   </h2>
                   <p className="text-xs text-slate-600 leading-relaxed">
@@ -440,7 +480,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                   </button>
                 </div>
 
-                <div className="w-52 h-36 rounded-xl overflow-hidden relative shadow-md shrink-0 bg-blue-900">
+                <div className="w-full sm:w-52 h-36 rounded-xl overflow-hidden relative shadow-md shrink-0 bg-blue-900">
                   <Image
                     src="/images/zoom_workplace_ai_notes.png"
                     alt="Zoom Workplace Pro Promo"
@@ -452,25 +492,25 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
               </div>
 
               {/* RECENT ACTIVITY SECTION */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs space-y-4">
                 <h2 className="text-base font-bold text-slate-900">Recent activity</h2>
 
                 {recent.length === 0 ? (
                   <div
                     onClick={() => router.push("/whiteboards")}
-                    className="border border-slate-200 rounded-xl p-5 flex items-start gap-4 hover:border-blue-300 transition-colors cursor-pointer"
+                    className="border border-slate-200 rounded-xl p-4 sm:p-5 flex items-start gap-4 hover:border-blue-300 transition-colors cursor-pointer"
                   >
-                    <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                      <FileText size={28} />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                      <FileText size={24} />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-bold text-[#0B5CFF]">
+                        <h3 className="text-xs font-bold text-[#0B5CFF] truncate">
                           {user?.name || "Rajneesh Sharma"} Meeting Note - {new Date().toLocaleDateString()}
                         </h3>
                         <span className="text-[10px] text-slate-400">...</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1">
+                      <p className="text-[11px] text-slate-500 mt-1 truncate">
                         modified on {new Date().toLocaleDateString()} by {user?.name || "Rajneesh Sharma"}
                       </p>
                       <span className="inline-block mt-3 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
@@ -482,22 +522,22 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                   recent.map((item) => (
                     <div
                       key={item.instance_id}
-                      className="border border-slate-200 rounded-xl p-4 flex items-center justify-between hover:border-blue-300 transition-colors"
+                      className="border border-slate-200 rounded-xl p-3 sm:p-4 flex items-center justify-between hover:border-blue-300 transition-colors gap-2"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0B5CFF] flex items-center justify-center">
-                          <Video size={18} />
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#0B5CFF] flex items-center justify-center shrink-0">
+                          <Video size={16} />
                         </div>
-                        <div>
-                          <h3 className="text-xs font-bold text-slate-900">{item.topic}</h3>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            Meeting ID: {item.meeting_code} · {Math.ceil((item.duration_seconds || 0) / 60)} mins
+                        <div className="min-w-0">
+                          <h3 className="text-xs font-bold text-slate-900 truncate">{item.topic}</h3>
+                          <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                            ID: {item.meeting_code}
                           </p>
                         </div>
                       </div>
                       <button
                         onClick={() => handleStartMeetingByCode(item.meeting_code)}
-                        className="px-3 py-1 text-xs font-bold text-[#0B5CFF] bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer"
+                        className="px-3 py-1 text-xs font-bold text-[#0B5CFF] bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer shrink-0"
                       >
                         Rejoin
                       </button>
@@ -510,15 +550,15 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             {/* RIGHT COLUMN STACK (MEETING LAUNCHERS & WIDGETS) */}
             <div className="space-y-6">
               {/* QUICK LAUNCH ACTION BUTTONS CARD */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs text-center space-y-6">
-                <div className="flex items-center justify-center gap-6">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs text-center space-y-6">
+                <div className="flex items-center justify-center gap-4 sm:gap-6">
                   {/* Schedule */}
                   <button
                     onClick={() => setScheduleModalOpen(true)}
                     className="flex flex-col items-center gap-2 group cursor-pointer"
                   >
-                    <div className="w-13 h-13 rounded-2xl bg-[#0B5CFF] hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105">
-                      <Calendar size={22} />
+                    <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-[#0B5CFF] hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105">
+                      <Calendar size={20} />
                     </div>
                     <span className="text-xs font-bold text-slate-700">Schedule</span>
                   </button>
@@ -528,8 +568,8 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                     onClick={() => setJoinModalOpen(true)}
                     className="flex flex-col items-center gap-2 group cursor-pointer"
                   >
-                    <div className="w-13 h-13 rounded-2xl bg-[#0B5CFF] hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105">
-                      <Plus size={24} />
+                    <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-[#0B5CFF] hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105">
+                      <Plus size={22} />
                     </div>
                     <span className="text-xs font-bold text-slate-700">Join</span>
                   </button>
@@ -539,8 +579,8 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                     onClick={handleStartInstantMeeting}
                     className="flex flex-col items-center gap-2 group cursor-pointer"
                   >
-                    <div className="w-13 h-13 rounded-2xl bg-[#F26D21] hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105">
-                      <Video size={22} />
+                    <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-[#F26D21] hover:bg-orange-600 text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105">
+                      <Video size={20} />
                     </div>
                     <span className="text-xs font-bold text-slate-700">Host</span>
                   </button>
@@ -550,7 +590,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                 <div className="pt-4 border-t border-slate-100">
                   <p className="text-xs font-bold text-slate-800">Personal Meeting ID</p>
                   <div className="flex items-center justify-center gap-2 mt-1">
-                    <span className="text-sm font-mono font-bold text-slate-700 tracking-wide">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-slate-700 tracking-wide">
                       {pmiDisplay}
                     </span>
                     <button
@@ -565,7 +605,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
               </div>
 
               {/* MEETINGS WIDGET CARD */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-bold text-slate-900">Meetings</h2>
                   <button
@@ -610,9 +650,9 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         </main>
       </div>
 
-      {/* ─── 4. AUTHENTICATED DASHBOARD DARK FOOTER ────────────────────────── */}
-      <footer className="bg-[#161D2F] text-slate-300 pt-12 pb-8 px-6 text-xs border-t border-slate-800 mt-auto">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-6 gap-8 mb-10">
+      {/* ─── 4. DASHBOARD DARK FOOTER ────────────────────────── */}
+      <footer className="bg-[#161D2F] text-slate-300 pt-10 pb-8 px-4 sm:px-6 text-xs border-t border-slate-800 mt-auto">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-8 mb-8">
           <div>
             <p className="font-bold text-white text-xs mb-3">About</p>
             {["Zoom Blog", "Customers", "Our Team", "Careers", "Integrations", "Partners", "Investors", "Press", "Sustainability & ESG", "Zoom Cares", "Media Kit", "How To Videos", "Developer Platform", "Zoom Ventures", "Zoom Merchandise Store"].map(
@@ -649,17 +689,17 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             )}
           </div>
 
-          <div className="md:col-span-2 space-y-4">
+          <div className="sm:col-span-2 space-y-4">
             <div>
               <p className="font-bold text-white text-xs mb-1.5">Language</p>
-              <select onChange={() => showComingSoon("Language Selector")} className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-48">
+              <select onChange={() => showComingSoon("Language Selector")} className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-full sm:w-48">
                 <option>English</option>
               </select>
             </div>
 
             <div>
               <p className="font-bold text-white text-xs mb-1.5">Currency</p>
-              <select onChange={() => showComingSoon("Currency Selector")} className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-48">
+              <select onChange={() => showComingSoon("Currency Selector")} className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-full sm:w-48">
                 <option>Indian Rupee ₹</option>
                 <option>US Dollar $</option>
               </select>
@@ -675,9 +715,9 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
           </div>
         </div>
 
-        <div className="max-w-[1400px] mx-auto pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-4">
+        <div className="max-w-[1400px] mx-auto pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-4 text-center sm:text-left">
           <p>Copyright ©2026 Zoom Communications, Inc. All rights reserved.</p>
-          <div className="flex items-center gap-3 text-slate-400 flex-wrap">
+          <div className="flex items-center justify-center gap-3 text-slate-400 flex-wrap">
             {["Terms", "Privacy", "Trust Center", "Acceptable Use Guidelines", "Legal & Compliance", "Your Privacy Choices", "Cookie Preferences"].map((item) => (
               <span key={item} onClick={() => showComingSoon(item)} className="hover:text-white cursor-pointer">{item}</span>
             ))}
