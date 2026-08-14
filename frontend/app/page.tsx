@@ -12,6 +12,7 @@ import {
 import JoinMeetingModal from "@/components/modals/JoinMeetingModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
 import AuthenticatedDashboard from "@/components/dashboard/AuthenticatedDashboard";
+import Toast from "@/components/ui/Toast";
 import { api } from "@/lib/api";
 import { User as UserType } from "@/types";
 
@@ -91,7 +92,13 @@ export default function ZoomHomePage() {
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [activeNavDropdown, setActiveNavDropdown] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  const showComingSoon = (featureName: string) => {
+    setToastMessage(`✨ ${featureName} is coming soon!`);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   useEffect(() => {
     async function checkAuth() {
@@ -675,7 +682,8 @@ export default function ZoomHomePage() {
         <MessageSquare size={22} />
       </button>
 
-      {/* Modals */}
+      {/* Modals & Toast */}
+      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       <JoinMeetingModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
       <ScheduleMeetingModal isOpen={scheduleModalOpen} onClose={() => setScheduleModalOpen(false)} onScheduled={() => {}} />
     </div>

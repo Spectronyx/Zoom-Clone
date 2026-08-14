@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import JoinMeetingModal from "@/components/modals/JoinMeetingModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
+import Toast from "@/components/ui/Toast";
 import { api } from "@/lib/api";
 import { User, UpcomingMeetingGroup, RecentMeeting } from "@/types";
 
@@ -29,7 +30,14 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
   const [copiedPmi, setCopiedPmi] = useState(false);
   const [hostDropdownOpen, setHostDropdownOpen] = useState(false);
   const [webAppDropdownOpen, setWebAppDropdownOpen] = useState(false);
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [activeSidebarItem, setActiveSidebarItem] = useState("home");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showComingSoon = (featureName: string) => {
+    setToastMessage(`✨ ${featureName} is coming soon!`);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const loadData = async () => {
     try {
@@ -79,16 +87,36 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
 
   return (
     <div className="min-h-screen bg-[#F7F9FC] text-slate-900 font-sans select-none flex flex-col">
+      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+
       {/* ─── 1. TOP BLACK UTILITY HEADER ────────────────────────────────────── */}
       <div className="bg-[#0B1220] text-slate-300 text-[11px] px-6 py-1.5 flex items-center justify-end gap-6 font-medium">
-        <button className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer">
+        <button
+          onClick={() => showComingSoon("Global Search")}
+          className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
+        >
           <Search size={12} /> Search
         </button>
-        <button className="hover:text-white transition-colors cursor-pointer">Support</button>
+        <button
+          onClick={() => showComingSoon("Support Center")}
+          className="hover:text-white transition-colors cursor-pointer"
+        >
+          Support
+        </button>
         <span className="text-slate-400">1.888.799.9666</span>
         <span className="text-slate-600">|</span>
-        <button className="hover:text-white transition-colors cursor-pointer">Contact Sales</button>
-        <button className="hover:text-white transition-colors cursor-pointer">Request a Demo</button>
+        <button
+          onClick={() => showComingSoon("Contact Sales")}
+          className="hover:text-white transition-colors cursor-pointer"
+        >
+          Contact Sales
+        </button>
+        <button
+          onClick={() => showComingSoon("Request a Demo")}
+          className="hover:text-white transition-colors cursor-pointer"
+        >
+          Request a Demo
+        </button>
       </div>
 
       {/* ─── 2. MAIN WHITE NAVIGATION BAR ─────────────────────────────────── */}
@@ -99,10 +127,55 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             zoom
           </Link>
           <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-700">
-            <span className="hover:text-[#0B5CFF] cursor-pointer">Products</span>
-            <span className="hover:text-[#0B5CFF] cursor-pointer">Solutions</span>
-            <span className="hover:text-[#0B5CFF] cursor-pointer">Resources</span>
-            <span className="hover:text-[#0B5CFF] cursor-pointer">Plans & Pricing</span>
+            <div className="relative">
+              <button
+                onClick={() => setProductsDropdownOpen(!productsDropdownOpen)}
+                className="hover:text-[#0B5CFF] cursor-pointer flex items-center gap-1"
+              >
+                Products <ChevronDown size={12} />
+              </button>
+              {productsDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-1 z-50 animate-in fade-in">
+                  <button
+                    onClick={() => {
+                      setProductsDropdownOpen(false);
+                      router.push("/meetings");
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium flex items-center justify-between"
+                  >
+                    Meetings <Video size={12} className="text-blue-500" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setProductsDropdownOpen(false);
+                      router.push("/chat");
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium flex items-center justify-between"
+                  >
+                    Team Chat <MessageSquare size={12} className="text-indigo-500" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setProductsDropdownOpen(false);
+                      router.push("/whiteboards");
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium flex items-center justify-between"
+                  >
+                    Whiteboards <FileText size={12} className="text-purple-500" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button onClick={() => showComingSoon("Solutions Catalog")} className="hover:text-[#0B5CFF] cursor-pointer">
+              Solutions
+            </button>
+            <button onClick={() => showComingSoon("Resources & Documentation")} className="hover:text-[#0B5CFF] cursor-pointer">
+              Resources
+            </button>
+            <button onClick={() => showComingSoon("Plans & Pricing")} className="hover:text-[#0B5CFF] cursor-pointer">
+              Plans & Pricing
+            </button>
           </nav>
         </div>
 
@@ -170,10 +243,36 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             >
               Web App <ChevronDown size={12} />
             </button>
+            {webAppDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-1 z-50 animate-in fade-in">
+                <button
+                  onClick={() => {
+                    setWebAppDropdownOpen(false);
+                    router.push("/meetings");
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium"
+                >
+                  Launch Meetings Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    setWebAppDropdownOpen(false);
+                    showComingSoon("Desktop Client Sync");
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 rounded-lg text-slate-800 font-medium"
+                >
+                  Download Desktop App
+                </button>
+              </div>
+            )}
           </div>
 
           {/* User Profile Avatar Icon */}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer border border-amber-300">
+          <div
+            onClick={() => showComingSoon("Account Settings & Profile")}
+            className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer border border-amber-300"
+            title="Profile Settings"
+          >
             {user?.name?.[0]?.toUpperCase() || "R"}
           </div>
         </div>
@@ -184,8 +283,13 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         {/* LEFT SIDEBAR MENU */}
         <aside className="w-56 bg-white border-r border-slate-200 p-4 shrink-0 hidden md:block">
           <button
-            onClick={() => setActiveSidebarItem("home")}
-            className="w-full text-left px-3 py-2 text-xs font-bold rounded-lg bg-blue-50 text-[#0B5CFF] flex items-center gap-2 mb-4"
+            onClick={() => {
+              setActiveSidebarItem("home");
+              router.push("/");
+            }}
+            className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg flex items-center gap-2 mb-4 cursor-pointer ${
+              activeSidebarItem === "home" ? "bg-blue-50 text-[#0B5CFF]" : "hover:bg-slate-100 text-slate-700"
+            }`}
           >
             Home
           </button>
@@ -195,15 +299,21 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
           </p>
 
           <div className="space-y-0.5 text-xs text-slate-700 font-medium">
-            <div className="flex items-center justify-between px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
+            <button
+              onClick={() => showComingSoon("Zoom AI Companion")}
+              className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+            >
               <span>AI</span>
               <span className="text-[9px] font-bold text-blue-600 border border-blue-200 bg-blue-50 px-1 rounded">
                 New ↗
               </span>
-            </div>
+            </button>
 
             <button
-              onClick={() => setActiveSidebarItem("meetings")}
+              onClick={() => {
+                setActiveSidebarItem("meetings");
+                router.push("/meetings");
+              }}
               className={`w-full text-left px-3 py-1.5 rounded-lg hover:bg-slate-100 cursor-pointer flex items-center justify-between ${
                 activeSidebarItem === "meetings" ? "font-bold text-[#0B5CFF] bg-slate-100" : ""
               }`}
@@ -212,42 +322,62 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             </button>
 
             {["Recordings", "Summaries"].map((item) => (
-              <div key={item} className="px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
+              <button
+                key={item}
+                onClick={() => showComingSoon(item)}
+                className="w-full text-left px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
                 {item}
-              </div>
+              </button>
             ))}
 
-            <div className="flex items-center justify-between px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
+            <button
+              onClick={() => showComingSoon("Zoom Hub")}
+              className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+            >
               <span>Hub</span>
               <span className="text-[9px] font-bold text-blue-600 border border-blue-200 bg-blue-50 px-1 rounded">
                 New ↗
               </span>
-            </div>
+            </button>
 
-            {["Whiteboards", "Notes", "Clips", "Canvas", "Paper", "Sheets", "Slides", "Tasks", "Scheduler"].map(
-              (item) => (
-                <div key={item} className="px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer flex items-center justify-between">
-                  <span>{item}</span>
-                  <ExternalLink size={10} className="text-slate-400" />
-                </div>
-              )
-            )}
+            <button
+              onClick={() => router.push("/whiteboards")}
+              className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+            >
+              <span>Whiteboards</span>
+              <ExternalLink size={10} className="text-slate-400" />
+            </button>
 
-            <div className="pt-2 text-slate-500 hover:text-slate-800 px-3 py-1.5 cursor-pointer font-normal text-[11px]">
+            {["Notes", "Clips", "Canvas", "Paper", "Sheets", "Slides", "Tasks", "Scheduler"].map((item) => (
+              <button
+                key={item}
+                onClick={() => showComingSoon(item)}
+                className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                <span>{item}</span>
+                <ExternalLink size={10} className="text-slate-400" />
+              </button>
+            ))}
+
+            <button
+              onClick={() => showComingSoon("Product Catalog")}
+              className="w-full text-left pt-2 text-slate-500 hover:text-slate-800 px-3 py-1.5 cursor-pointer font-normal text-[11px]"
+            >
               Discover More Products
-            </div>
+            </button>
           </div>
 
           <div className="mt-8 pt-4 border-t border-slate-200 space-y-1 text-xs text-slate-600 font-medium">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
+            <button onClick={() => showComingSoon("My Account")} className="w-full flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
               <ChevronRight size={12} /> My Account
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
+            </button>
+            <button onClick={() => showComingSoon("Admin Console")} className="w-full flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
               <ChevronRight size={12} /> Admin
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
+            </button>
+            <button onClick={() => showComingSoon("Support & Docs")} className="w-full flex items-center gap-1.5 px-3 py-1.5 hover:bg-slate-100 rounded-lg cursor-pointer">
               <ChevronRight size={12} /> Support
-            </div>
+            </button>
           </div>
         </aside>
 
@@ -271,10 +401,16 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <button className="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
+                  <button
+                    onClick={() => showComingSoon("Plan Management")}
+                    className="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
                     Manage Plan
                   </button>
-                  <button className="text-xs font-semibold text-[#0B5CFF] hover:underline cursor-pointer">
+                  <button
+                    onClick={() => showComingSoon("Plan Details")}
+                    className="text-xs font-semibold text-[#0B5CFF] hover:underline cursor-pointer"
+                  >
                     View Plan Details
                   </button>
                 </div>
@@ -296,7 +432,10 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                     Get 15% off Workplace Pro annual for longer meetings, My Notes, and more!
                   </p>
                   <p className="text-[10px] text-slate-400">Terms apply.</p>
-                  <button className="mt-2 px-5 py-2 rounded-full bg-[#0B5CFF] hover:bg-blue-700 text-white text-xs font-bold transition-all cursor-pointer">
+                  <button
+                    onClick={() => showComingSoon("Offer Redemption")}
+                    className="mt-2 px-5 py-2 rounded-full bg-[#0B5CFF] hover:bg-blue-700 text-white text-xs font-bold transition-all cursor-pointer"
+                  >
                     Redeem offer
                   </button>
                 </div>
@@ -317,7 +456,10 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                 <h2 className="text-base font-bold text-slate-900">Recent activity</h2>
 
                 {recent.length === 0 ? (
-                  <div className="border border-slate-200 rounded-xl p-5 flex items-start gap-4 hover:border-blue-300 transition-colors">
+                  <div
+                    onClick={() => router.push("/whiteboards")}
+                    className="border border-slate-200 rounded-xl p-5 flex items-start gap-4 hover:border-blue-300 transition-colors cursor-pointer"
+                  >
                     <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
                       <FileText size={28} />
                     </div>
@@ -355,7 +497,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                       </div>
                       <button
                         onClick={() => handleStartMeetingByCode(item.meeting_code)}
-                        className="px-3 py-1 text-xs font-bold text-[#0B5CFF] bg-blue-50 rounded-lg hover:bg-blue-100"
+                        className="px-3 py-1 text-xs font-bold text-[#0B5CFF] bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer"
                       >
                         Rejoin
                       </button>
@@ -438,7 +580,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                   <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-center space-y-3">
                     <p className="text-xs font-bold text-slate-700">No Upcoming Meetings</p>
                     <button
-                      onClick={handleStartInstantMeeting}
+                      onClick={() => showComingSoon("Audio & Video Hardware Test Room")}
                       className="px-4 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs transition-colors cursor-pointer"
                     >
                       Test Audio and Video
@@ -454,7 +596,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
                         </div>
                         <button
                           onClick={() => handleStartMeetingByCode(m.meeting_code)}
-                          className="px-2.5 py-1 bg-[#0B5CFF] text-white text-xs font-bold rounded-lg"
+                          className="px-2.5 py-1 bg-[#0B5CFF] text-white text-xs font-bold rounded-lg cursor-pointer"
                         >
                           Start
                         </button>
@@ -475,7 +617,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             <p className="font-bold text-white text-xs mb-3">About</p>
             {["Zoom Blog", "Customers", "Our Team", "Careers", "Integrations", "Partners", "Investors", "Press", "Sustainability & ESG", "Zoom Cares", "Media Kit", "How To Videos", "Developer Platform", "Zoom Ventures", "Zoom Merchandise Store"].map(
               (item) => (
-                <p key={item} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
+                <p key={item} onClick={() => showComingSoon(item)} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
               )
             )}
           </div>
@@ -484,7 +626,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             <p className="font-bold text-white text-xs mb-3">Download</p>
             {["Zoom Workplace App", "Zoom Rooms Client", "Browser Extension", "Outlook Plug-in", "Zoom Plugin for HCL Notes", "Zoom Plugin Admin Tool for HCL Notes", "Notes", "Android App", "Zoom Virtual Backgrounds"].map(
               (item) => (
-                <p key={item} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
+                <p key={item} onClick={() => showComingSoon(item)} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
               )
             )}
           </div>
@@ -493,16 +635,16 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
             <p className="font-bold text-white text-xs mb-3">Sales</p>
             {["1.888.799.9666", "Contact Sales", "Plans & Pricing", "Request a Demo", "Webinars and Events", "Zoom Experience Center"].map(
               (item) => (
-                <p key={item} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
+                <p key={item} onClick={() => showComingSoon(item)} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
               )
             )}
           </div>
 
           <div>
             <p className="font-bold text-white text-xs mb-3">Support</p>
-            {["Test Zoom", "Account", "Support Center", "Learning Center", "Zoom Community", "Feedback", "Contact Us", "Accessibility", "Developer Support", "Privacy, Security, Legal Policies, and Modern Slavery Act Transparency Statement"].map(
+            {["Test Zoom", "Account", "Support Center", "Learning Center", "Zoom Community", "Feedback", "Contact Us", "Accessibility", "Developer Support", "Privacy, Security, Legal Policies"].map(
               (item) => (
-                <p key={item} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
+                <p key={item} onClick={() => showComingSoon(item)} className="text-[11px] text-slate-400 hover:text-white py-0.5 cursor-pointer">{item}</p>
               )
             )}
           </div>
@@ -510,14 +652,14 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
           <div className="md:col-span-2 space-y-4">
             <div>
               <p className="font-bold text-white text-xs mb-1.5">Language</p>
-              <select className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-48">
+              <select onChange={() => showComingSoon("Language Selector")} className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-48">
                 <option>English</option>
               </select>
             </div>
 
             <div>
               <p className="font-bold text-white text-xs mb-1.5">Currency</p>
-              <select className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-48">
+              <select onChange={() => showComingSoon("Currency Selector")} className="bg-[#0B1220] border border-slate-700 text-xs text-slate-200 rounded-lg p-2 w-48">
                 <option>Indian Rupee ₹</option>
                 <option>US Dollar $</option>
               </select>
@@ -525,7 +667,7 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
 
             <div className="flex items-center gap-3 pt-2 text-slate-400">
               {["🌐", "in", "X", "YT", "f", "IG"].map((icon, i) => (
-                <span key={i} className="w-7 h-7 rounded-full bg-[#0B1220] flex items-center justify-center text-xs font-bold hover:text-white cursor-pointer border border-slate-800">
+                <span key={i} onClick={() => showComingSoon("Social Channel")} className="w-7 h-7 rounded-full bg-[#0B1220] flex items-center justify-center text-xs font-bold hover:text-white cursor-pointer border border-slate-800">
                   {icon}
                 </span>
               ))}
@@ -536,15 +678,18 @@ export default function AuthenticatedDashboard({ initialUser }: AuthenticatedDas
         <div className="max-w-[1400px] mx-auto pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-4">
           <p>Copyright ©2026 Zoom Communications, Inc. All rights reserved.</p>
           <div className="flex items-center gap-3 text-slate-400 flex-wrap">
-            <span>Terms</span> | <span>Privacy</span> | <span>Trust Center</span> | <span>Acceptable Use Guidelines</span> | <span>Legal & Compliance</span> | <span className="text-blue-400 flex items-center gap-1"><Shield size={10} /> Your Privacy Choices</span> | <span>Cookie Preferences</span>
+            {["Terms", "Privacy", "Trust Center", "Acceptable Use Guidelines", "Legal & Compliance", "Your Privacy Choices", "Cookie Preferences"].map((item) => (
+              <span key={item} onClick={() => showComingSoon(item)} className="hover:text-white cursor-pointer">{item}</span>
+            ))}
           </div>
         </div>
       </footer>
 
       {/* Floating Chat Button */}
       <button
-        onClick={handleStartInstantMeeting}
+        onClick={() => router.push("/chat")}
         className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#0B5CFF] text-white shadow-2xl flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
+        title="Team Chat"
       >
         <MessageSquare size={20} />
       </button>
