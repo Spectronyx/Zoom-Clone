@@ -21,3 +21,6 @@ backend/.coverage
 .DS_Store
 .vscode/
 .idea/
+
+# Private Internal Documentation (Not for Git)
+INTERNAL_SERVICES_SUMMARY.md
