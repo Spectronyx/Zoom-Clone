@@ -221,7 +221,12 @@ export default function MeetingRoomPage() {
           if (action === "mute-all" || action === "mute") {
             const mediaStore = useMediaStore.getState();
             if (!mediaStore.isMuted) {
-              mediaStore.toggleMute();
+              mediaStore.setMuted(true);
+              socketRef.current?.send({
+                type: "mute-state",
+                mute_type: "audio",
+                muted: true,
+              });
             }
           } else if (action === "remove" || action === "end-meeting") {
             handleLeave();
@@ -379,6 +384,10 @@ export default function MeetingRoomPage() {
 
   const handleMuteAll = useCallback(() => {
     socketRef.current?.send({ type: "host-action", action: "mute-all" });
+    const store = useMeetingStore.getState();
+    store.participants.forEach((p) => {
+      store.updateParticipantMuteState(p.participant_id, "audio", true);
+    });
   }, []);
 
   const handleMakeHost = useCallback((pid: string) => {
@@ -405,6 +414,7 @@ export default function MeetingRoomPage() {
       action: "mute-participant",
       target_participant_id: pid,
     });
+    useMeetingStore.getState().updateParticipantMuteState(pid, "audio", true);
   }, []);
 
   const handleRemoveParticipant = useCallback((pid: string) => {

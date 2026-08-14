@@ -31,8 +31,6 @@ export default function ParticipantsPanel({
   onToggleLockMeeting,
   onClose,
 }: ParticipantsPanelProps) {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-
   return (
     <div className="fixed md:relative inset-0 md:inset-auto z-50 w-full md:w-[320px] h-full bg-white border-l border-zoom-border flex flex-col animate-slide-in-right">
       {/* Header */}
@@ -60,9 +58,9 @@ export default function ParticipantsPanel({
         <div className="px-4 py-2.5 bg-slate-50 border-b border-zoom-border flex items-center justify-between gap-2">
           <button
             onClick={onMuteAll}
-            className="px-3 py-1.5 bg-zoom-blue hover:bg-zoom-blueHover text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
+            className="px-3 py-1.5 bg-zoom-blue hover:bg-zoom-blueHover text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1"
           >
-            Mute All
+            <MicOff size={13} /> Mute All
           </button>
 
           {onToggleLockMeeting && (
@@ -91,7 +89,7 @@ export default function ParticipantsPanel({
       {/* Participant List */}
       <div className="flex-1 overflow-y-auto py-2">
         {/* Local user */}
-        <div className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors">
+        <div className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-100">
           <div className="flex items-center gap-3">
             <Avatar name={localDisplayName} size="sm" />
             <div>
@@ -110,11 +108,9 @@ export default function ParticipantsPanel({
         {participants.map((p) => (
           <div
             key={p.participant_id}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors group"
-            onMouseEnter={() => setHoveredId(p.participant_id)}
-            onMouseLeave={() => setHoveredId(null)}
+            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-50"
           >
-            <div className="flex items-center gap-3 truncate pr-2">
+            <div className="flex items-center gap-3 truncate pr-2 min-w-0">
               <Avatar name={p.display_name} size="sm" />
               <div className="truncate">
                 <span className="text-sm text-zoom-text-primary font-medium truncate block">
@@ -140,20 +136,25 @@ export default function ParticipantsPanel({
                 <Video size={14} className="text-zoom-text-secondary" />
               )}
 
-              {/* Host actions on hover */}
+              {/* Host actions: explicit Mute and Remove buttons */}
               {isHost && (
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                <div className="flex items-center gap-1.5 ml-1">
                   <button
                     onClick={() => onMuteParticipant(p.participant_id)}
-                    className="p-1.5 rounded hover:bg-gray-200 text-zoom-text-secondary transition-colors cursor-pointer"
-                    title="Mute participant"
+                    disabled={p.is_muted}
+                    className={`px-2 py-1 text-xs font-semibold rounded transition-colors cursor-pointer ${
+                      p.is_muted
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                    }`}
+                    title={p.is_muted ? "Already muted" : "Mute participant"}
                   >
-                    <MicOff size={14} />
+                    {p.is_muted ? "Muted" : "Mute"}
                   </button>
                   {onMakeHost && !p.is_host && (
                     <button
                       onClick={() => onMakeHost(p.participant_id)}
-                      className="p-1.5 rounded hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer"
+                      className="p-1 rounded hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer"
                       title="Make Host"
                     >
                       <UserCheck size={14} />
@@ -161,7 +162,7 @@ export default function ParticipantsPanel({
                   )}
                   <button
                     onClick={() => onRemoveParticipant(p.participant_id)}
-                    className="p-1.5 rounded hover:bg-red-100 text-zoom-red transition-colors cursor-pointer"
+                    className="p-1 rounded hover:bg-red-100 text-zoom-red transition-colors cursor-pointer"
                     title="Remove participant"
                   >
                     <X size={14} />
