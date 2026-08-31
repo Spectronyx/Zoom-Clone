@@ -4,8 +4,9 @@ function getWsBase(): string {
   }
   if (typeof window !== 'undefined') {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Connect to same host & port as frontend, proxied by Next.js rewrites
-    return `${protocol}//${window.location.host}`;
+    // Connect directly to Django on port 8000 using the same hostname,
+    // because Next.js rewrites do not reliably proxy WebSockets.
+    return `${protocol}//${window.location.hostname}:8000`;
   }
   return 'ws://127.0.0.1:8000';
 }
