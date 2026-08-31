@@ -91,7 +91,7 @@ export default function MeetingRoomPage() {
       const session = JSON.parse(stored) as JoinMeetingResponse & { meetingCode: string };
       setMeetingSession(session);
       sessionStorage.removeItem("meetingSession");
-    } else if (!instanceId) {
+    } else if (!useMeetingStore.getState().instanceId) {
       router.push(`/meeting/${code}/lobby`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

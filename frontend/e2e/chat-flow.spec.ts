@@ -4,7 +4,7 @@ test('send chat message and verify in chat panel', async ({ page }) => {
   await page.goto('/');
 
   // Wait for authenticated dashboard and click Host button
-  const hostBtn = page.getByRole('button', { name: /^host$/i }).first();
+  const hostBtn = page.getByRole('button', { name: /^host$/i }).last();
   await expect(hostBtn).toBeVisible({ timeout: 20000 });
   await hostBtn.click();
 
@@ -18,12 +18,14 @@ test('send chat message and verify in chat panel', async ({ page }) => {
   await expect(joinBtn).toBeVisible({ timeout: 5000 });
   await joinBtn.click();
 
-  // Wait for meeting room to load
-  await expect(page).toHaveURL(/\/meeting\//, { timeout: 15000 });
+  // Wait for meeting room to load (ensure no /lobby at the end)
+  await expect(page).toHaveURL(/\/meeting\/[^/]+$/, { timeout: 15000 });
   await page.waitForTimeout(2000); // Let room UI stabilize
 
   // Open chat panel
-  const chatBtn = page.getByRole('button', { name: /chat/i });
+  const chatBtn = page.locator('button[title="Chat"]');
+  await page.locator('body').hover();
+  await page.mouse.move(200, 200);
   await expect(chatBtn).toBeVisible({ timeout: 5000 });
   await chatBtn.click();
 

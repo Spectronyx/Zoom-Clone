@@ -72,6 +72,8 @@ export default function ControlBar({
         <div className="flex items-center gap-1">
           <button
             onClick={onToggleMute}
+            aria-label={isMuted ? "Unmute" : "Mute"}
+            title={isMuted ? "Unmute" : "Mute"}
             className={`
               flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-3 py-1.5 rounded-lg
               transition-colors cursor-pointer group
@@ -139,6 +141,8 @@ export default function ControlBar({
 
           <button
             onClick={toggleChat}
+            aria-label="Chat"
+            title="Chat"
             className={`
               flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-3 py-1.5 rounded-lg
               transition-colors cursor-pointer
@@ -223,6 +227,8 @@ export default function ControlBar({
                 onLeave();
               }
             }}
+            aria-label={isHost ? "End" : "Leave"}
+            title={isHost ? "End" : "Leave"}
             className="flex items-center justify-center gap-1.5 min-h-[44px] px-4 py-2 rounded-lg
               bg-zoom-red hover:bg-zoom-red-hover transition-colors cursor-pointer"
           >
