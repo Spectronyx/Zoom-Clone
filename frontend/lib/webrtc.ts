@@ -191,11 +191,29 @@ export class WebRTCManager {
     };
 
     pc.ontrack = (event) => {
-      const [remoteStream] = event.streams;
-      if (remoteStream) {
-        peerInfo.stream = remoteStream;
-        this.onRemoteStream(participantId, remoteStream);
+      console.log('[WebRTC] Track received:', event.track.kind, 'from participant:', participantId);
+      let stream = peerInfo.stream;
+      if (!stream) {
+        stream = event.streams[0] || new MediaStream([event.track]);
+        peerInfo.stream = stream;
+      } else {
+        if (!stream.getTracks().some((t) => t.id === event.track.id)) {
+          stream.addTrack(event.track);
+        }
       }
+
+      // Create a fresh MediaStream instance reference so React/Zustand detects state change and re-renders VideoTile
+      const updatedStream = new MediaStream(stream.getTracks());
+      peerInfo.stream = updatedStream;
+
+      // Re-trigger playback if track unmutes or finishes loading
+      event.track.onunmute = () => {
+        console.log('[WebRTC] Track unmuted:', event.track.kind);
+        const refreshed = new MediaStream(peerInfo.stream?.getTracks() || []);
+        this.onRemoteStream(participantId, refreshed);
+      };
+
+      this.onRemoteStream(participantId, updatedStream);
     };
 
     return pc;

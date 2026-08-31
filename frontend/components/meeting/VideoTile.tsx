@@ -49,31 +49,42 @@ export default function VideoTile({
         if (videoRef.current.srcObject !== stream) {
           videoRef.current.srcObject = stream;
         }
-        videoRef.current.play().catch((err) => {
-          console.warn("Video play error:", err);
-        });
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("[VideoTile] Autoplay prevented or delayed:", err);
+          });
+        }
       } else {
         videoRef.current.srcObject = null;
       }
     }
   }, [stream, shouldShowVideo]);
 
+  // Click handler to manually resume video/audio if desktop browser blocked autoplay
+  const handleTileClick = () => {
+    if (videoRef.current && videoRef.current.paused) {
+      videoRef.current.play().catch(() => {});
+    }
+  };
+
   return (
     <div
+      onClick={handleTileClick}
       className={`
         group relative bg-zoom-dark-tile rounded-xl overflow-hidden flex items-center justify-center transition-all duration-200 min-h-0 min-w-0 max-h-full max-w-full
         ${isPinned ? "ring-2 ring-amber-400 shadow-lg" : isActiveSpeaker ? "ring-2 ring-zoom-blue" : ""}
         ${className}
       `}
     >
-      {/* Video Element - Always Mounted to Ensure Audio Tracks Play Continuously */}
+      {/* Video Element - Keep mounted in layout so audio decoding stays active */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted={isLocal}
         className={`w-full h-full object-cover ${isLocal ? "video-mirror" : ""} ${
-          shouldShowVideo ? "block" : "hidden"
+          shouldShowVideo ? "block" : "opacity-0 pointer-events-none absolute inset-0"
         }`}
       />
 
