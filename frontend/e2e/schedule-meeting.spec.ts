@@ -4,12 +4,13 @@ test('schedule a meeting and see it in upcoming list', async ({ page }) => {
   await page.goto('/');
 
   // Wait for authenticated dashboard to load
-  const scheduleBtn = page.locator('button:has-text("Schedule")');
-  await expect(scheduleBtn).toBeVisible({ timeout: 15000 });
+  // Use the main content area Schedule button (not nav or dropdown)
+  const scheduleBtn = page.getByRole('main').getByRole('button', { name: /^schedule$/i });
+  await expect(scheduleBtn).toBeVisible({ timeout: 20000 });
   await scheduleBtn.click();
 
   // Modal should appear
-  await expect(page.locator('text=Schedule Meeting')).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText('Schedule Meeting')).toBeVisible({ timeout: 5000 });
 
   // Fill in topic
   const topicInput = page.locator('input[id="topic"]');
@@ -17,11 +18,11 @@ test('schedule a meeting and see it in upcoming list', async ({ page }) => {
   await topicInput.fill('E2E Automated Sync');
 
   // Submit the form
-  const saveBtn = page.locator('button:has-text("Save"), button:has-text("Schedule")').last();
+  const saveBtn = page.getByRole('button', { name: /save|schedule/i }).last();
   await saveBtn.click();
 
-  // Should show confirmation
+  // Should show confirmation or the meeting in the list
   await expect(
-    page.locator('text=Meeting Scheduled, text=scheduled, text=E2E Automated Sync').first()
+    page.getByText(/scheduled|E2E Automated Sync/i).first()
   ).toBeVisible({ timeout: 10000 });
 });

@@ -120,9 +120,6 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run Playwright E2E Tests
-        env:
-          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
-          NEXT_PUBLIC_WS_URL: ws://127.0.0.1:8000
         run: |
           cd frontend
           npx playwright test

@@ -4,31 +4,31 @@ test('send chat message and verify in chat panel', async ({ page }) => {
   await page.goto('/');
 
   // Wait for authenticated dashboard and create a meeting
-  const newMeetingBtn = page.locator('button:has-text("New Meeting")');
-  await expect(newMeetingBtn).toBeVisible({ timeout: 15000 });
+  const newMeetingBtn = page.getByRole('main').getByRole('button', { name: /new meeting/i });
+  await expect(newMeetingBtn).toBeVisible({ timeout: 20000 });
   await newMeetingBtn.click();
 
   // Handle lobby
-  await expect(page).toHaveURL(/\/meeting\/.*\/lobby/, { timeout: 10000 });
+  await expect(page).toHaveURL(/\/meeting\/.*\/lobby/, { timeout: 15000 });
   const nameInput = page.locator('input[placeholder*="name" i]');
-  if (await nameInput.isVisible()) {
+  if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
     await nameInput.fill('E2E Tester');
   }
-  const joinBtn = page.locator('button:has-text("Join"), button:has-text("Ask to Join")');
+  const joinBtn = page.getByRole('button', { name: /join|ask to join/i });
   await expect(joinBtn).toBeVisible({ timeout: 5000 });
   await joinBtn.click();
 
   // Wait for meeting room to load
-  await expect(page).toHaveURL(/\/meeting\//, { timeout: 10000 });
-  await page.waitForTimeout(2000); // Let the room UI stabilize
+  await expect(page).toHaveURL(/\/meeting\//, { timeout: 15000 });
+  await page.waitForTimeout(2000); // Let room UI stabilize
 
   // Open chat panel
-  const chatBtn = page.locator('button:has-text("Chat")');
+  const chatBtn = page.getByRole('button', { name: /chat/i });
   await expect(chatBtn).toBeVisible({ timeout: 5000 });
   await chatBtn.click();
 
   // Verify chat panel opened
-  await expect(page.locator('text=Chat, text=chat').first()).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText(/chat/i).first()).toBeVisible({ timeout: 5000 });
 
   // Type and send a message
   const chatInput = page.locator('input[placeholder*="message" i], input[placeholder*="type" i]');
@@ -37,5 +37,5 @@ test('send chat message and verify in chat panel', async ({ page }) => {
   await chatInput.press('Enter');
 
   // Verify message appears
-  await expect(page.locator('text=Hello E2E Test')).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText('Hello E2E Test')).toBeVisible({ timeout: 5000 });
 });

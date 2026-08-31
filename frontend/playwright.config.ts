@@ -31,10 +31,8 @@ export default defineConfig({
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
-      env: {
-        NEXT_PUBLIC_API_URL: 'http://127.0.0.1:8000',
-        NEXT_PUBLIC_WS_URL: 'ws://127.0.0.1:8000',
-      },
+      // Do NOT set NEXT_PUBLIC_API_URL — let Next.js rewrites in next.config.ts
+      // proxy /api/* requests server-side to http://127.0.0.1:8000, avoiding CORS
     },
   ],
 });
