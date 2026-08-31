@@ -1,3 +1,9 @@
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'meetclone.settings')
+
+import django
+django.setup()
+
 import pytest
 from rest_framework.test import APIClient
 from meetings.models import User, Meeting, MeetingType, MeetingStatus
