@@ -3,10 +3,10 @@ import { test, expect } from '@playwright/test';
 test('send chat message and verify in chat panel', async ({ page }) => {
   await page.goto('/');
 
-  // Wait for authenticated dashboard and create a meeting
-  const newMeetingBtn = page.getByRole('main').getByRole('button', { name: /new meeting/i });
-  await expect(newMeetingBtn).toBeVisible({ timeout: 20000 });
-  await newMeetingBtn.click();
+  // Wait for authenticated dashboard and click Host button
+  const hostBtn = page.getByRole('button', { name: /^host$/i }).first();
+  await expect(hostBtn).toBeVisible({ timeout: 20000 });
+  await hostBtn.click();
 
   // Handle lobby
   await expect(page).toHaveURL(/\/meeting\/.*\/lobby/, { timeout: 15000 });
@@ -14,7 +14,7 @@ test('send chat message and verify in chat panel', async ({ page }) => {
   if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
     await nameInput.fill('E2E Tester');
   }
-  const joinBtn = page.getByRole('button', { name: /join|ask to join/i });
+  const joinBtn = page.getByRole('button', { name: /join|ask to join/i }).first();
   await expect(joinBtn).toBeVisible({ timeout: 5000 });
   await joinBtn.click();
 

@@ -4,9 +4,9 @@ test('start instant meeting and verify room UI loads', async ({ page }) => {
   await page.goto('/');
 
   // Wait for authenticated dashboard to load (API call fetches user via proxy)
-  const newMeetingBtn = page.getByRole('main').getByRole('button', { name: /new meeting/i });
-  await expect(newMeetingBtn).toBeVisible({ timeout: 20000 });
-  await newMeetingBtn.click();
+  const hostBtn = page.getByRole('button', { name: /^host$/i }).first();
+  await expect(hostBtn).toBeVisible({ timeout: 20000 });
+  await hostBtn.click();
 
   // Should navigate to lobby
   await expect(page).toHaveURL(/\/meeting\/.*\/lobby/, { timeout: 15000 });
@@ -17,7 +17,7 @@ test('start instant meeting and verify room UI loads', async ({ page }) => {
     await nameInput.fill('E2E Tester');
   }
 
-  const joinBtn = page.getByRole('button', { name: /join|ask to join/i });
+  const joinBtn = page.getByRole('button', { name: /join|ask to join/i }).first();
   await expect(joinBtn).toBeVisible({ timeout: 5000 });
   await joinBtn.click();
 

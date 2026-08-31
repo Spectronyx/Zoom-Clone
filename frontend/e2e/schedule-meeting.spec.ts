@@ -4,8 +4,8 @@ test('schedule a meeting and see it in upcoming list', async ({ page }) => {
   await page.goto('/');
 
   // Wait for authenticated dashboard to load
-  // Use the main content area Schedule button (not nav or dropdown)
-  const scheduleBtn = page.getByRole('main').getByRole('button', { name: /^schedule$/i });
+  // Click Schedule button on dashboard grid
+  const scheduleBtn = page.getByRole('button', { name: /^schedule$/i }).first();
   await expect(scheduleBtn).toBeVisible({ timeout: 20000 });
   await scheduleBtn.click();
 
