@@ -65,23 +65,38 @@ export default function LobbyPage() {
         return;
       }
 
-      // Media preview
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        setLocalStream(stream);
-      } catch {
-        setCameraError("Camera/microphone permission denied");
+      // Media preview — progressive fallback for mobile compatibility
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraError("Your browser doesn't support camera access. Please use HTTPS.");
+      } else {
         try {
-          const audioStream = await navigator.mediaDevices.getUserMedia({
-            video: false,
-            audio: true,
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: { echoCancellation: true, noiseSuppression: true },
           });
-          setLocalStream(audioStream);
-        } catch {
-          setCameraError("No media access available");
+          setLocalStream(stream);
+        } catch (err1) {
+          console.warn('[Lobby] Full media failed:', err1);
+          try {
+            // Fallback: basic video + audio (no constraints)
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            setLocalStream(stream);
+          } catch {
+            setCameraError("Camera permission denied — trying audio only");
+            try {
+              const audioStream = await navigator.mediaDevices.getUserMedia({
+                video: false,
+                audio: { echoCancellation: true, noiseSuppression: true },
+              });
+              setLocalStream(audioStream);
+            } catch {
+              setCameraError(
+                window.location.protocol === 'http:' && window.location.hostname !== 'localhost'
+                  ? "Camera blocked: HTTPS is required on mobile. Use localhost or enable HTTPS."
+                  : "No media access available. Check browser permissions."
+              );
+            }
+          }
         }
       }
     }

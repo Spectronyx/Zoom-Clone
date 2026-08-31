@@ -63,15 +63,23 @@ export default function MeetingRoomPage() {
 
   // ─── Restore media stream if null ─────────────────────────────────────────
   useEffect(() => {
-    if (!localStream) {
+    if (!localStream && navigator.mediaDevices?.getUserMedia) {
       navigator.mediaDevices
-        ?.getUserMedia({ video: true, audio: true })
+        .getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: { echoCancellation: true, noiseSuppression: true },
+        })
         .then((stream) => setLocalStream(stream))
         .catch(() => {
           navigator.mediaDevices
-            ?.getUserMedia({ video: false, audio: true })
+            .getUserMedia({ video: true, audio: true })
             .then((stream) => setLocalStream(stream))
-            .catch(() => console.warn("No camera/mic permission"));
+            .catch(() => {
+              navigator.mediaDevices
+                ?.getUserMedia({ video: false, audio: true })
+                .then((stream) => setLocalStream(stream))
+                .catch(() => console.warn("No camera/mic permission"));
+            });
         });
     }
   }, [localStream, setLocalStream]);
