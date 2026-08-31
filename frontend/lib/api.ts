@@ -3,7 +3,9 @@ function getApiBase(): string {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
+    // In dev, backend always runs plain HTTP on port 8000
+    // (even when frontend uses HTTPS for mobile WebRTC)
+    return `http://${window.location.hostname}:8000`;
   }
   return 'http://localhost:8000';
 }

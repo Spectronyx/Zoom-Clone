@@ -3,8 +3,9 @@ function getWsBase(): string {
     return process.env.NEXT_PUBLIC_WS_URL;
   }
   if (typeof window !== 'undefined') {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${window.location.hostname}:8000`;
+    // In dev, backend (Daphne) always runs plain WS on port 8000
+    // (even when frontend uses HTTPS for mobile WebRTC)
+    return `ws://${window.location.hostname}:8000`;
   }
   return 'ws://localhost:8000';
 }
