@@ -178,6 +178,17 @@ export class WebRTCManager {
       this.localStream.getTracks().forEach((track) => {
         pc.addTrack(track, this.localStream!);
       });
+      
+      // Ensure we can receive video if we only have audio, and vice versa
+      const hasAudio = this.localStream.getAudioTracks().length > 0;
+      const hasVideo = this.localStream.getVideoTracks().length > 0;
+      
+      if (!hasAudio) pc.addTransceiver('audio', { direction: 'recvonly' });
+      if (!hasVideo) pc.addTransceiver('video', { direction: 'recvonly' });
+    } else {
+      // If no local stream at all, ensure we can still receive remote media
+      pc.addTransceiver('audio', { direction: 'recvonly' });
+      pc.addTransceiver('video', { direction: 'recvonly' });
     }
 
     pc.onicecandidate = (event) => {
