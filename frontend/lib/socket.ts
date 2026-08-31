@@ -3,11 +3,11 @@ function getWsBase(): string {
     return process.env.NEXT_PUBLIC_WS_URL;
   }
   if (typeof window !== 'undefined') {
-    // In dev, backend (Daphne) always runs plain WS on port 8000
-    // (even when frontend uses HTTPS for mobile WebRTC)
-    return `ws://${window.location.hostname}:8000`;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Connect to same host & port as frontend, proxied by Next.js rewrites
+    return `${protocol}//${window.location.host}`;
   }
-  return 'ws://localhost:8000';
+  return 'ws://127.0.0.1:8000';
 }
 
 const WS_BASE = getWsBase();
