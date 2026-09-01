@@ -71,7 +71,12 @@ export default function LobbyPage() {
       } else {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+            video: { 
+              facingMode: 'user', 
+              width: { ideal: 320, max: 640 }, 
+              height: { ideal: 240, max: 480 },
+              frameRate: { ideal: 15, max: 24 }
+            },
             audio: { echoCancellation: true, noiseSuppression: true },
           });
           setLocalStream(stream);

@@ -69,10 +69,29 @@ export class WebRTCManager {
       const senders = peer.connection.getSenders();
       if (senders.length === 0) {
         stream.getTracks().forEach((track) => {
-          peer.connection.addTrack(track, stream);
+          this.addOptimizedTrack(peer.connection, track, stream);
         });
+        // Note: Adding tracks dynamically to an existing connection usually requires renegotiation (onnegotiationneeded).
       }
     }
+  }
+
+  /** Helper to add a track and immediately apply low-data streaming optimizations. */
+  private addOptimizedTrack(pc: RTCPeerConnection, track: MediaStreamTrack, stream: MediaStream) {
+    const sender = pc.addTrack(track, stream);
+    
+    if (track.kind === 'video') {
+      const params = sender.getParameters();
+      if (!params.encodings) params.encodings = [{}];
+      
+      // Aggressive low-data optimization: limit to 150kbps, scale down resolution by half
+      params.encodings[0].maxBitrate = 150000;
+      params.encodings[0].scaleResolutionDownBy = 2.0;
+      params.degradationPreference = 'maintain-framerate';
+      
+      sender.setParameters(params).catch(e => console.warn('[WebRTC] Could not set low-data video parameters', e));
+    }
+    return sender;
   }
 
   private setupSignalingHandlers() {
@@ -176,7 +195,7 @@ export class WebRTCManager {
 
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
-        pc.addTrack(track, this.localStream!);
+        this.addOptimizedTrack(pc, track, this.localStream!);
       });
       
       // Ensure we can receive video if we only have audio, and vice versa
